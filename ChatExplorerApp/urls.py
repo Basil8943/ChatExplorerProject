@@ -15,4 +15,7 @@ urlpatterns=[
     path('login_view',views.login_view,name="login_view"),
     path('getsessions/<str:user_id>',views.getsessions,name="getsessions"),
     path('chat', views.chat, name="chat"),
+    path('getchatresults/<str:user_id>/<str:session_id>',views.getchatresults,name="getchatresults")
+
+
     ]

@@ -19,9 +19,16 @@ body{
     gap: .5rem;
 }
 
+
 .session-item-flex{
     cursor: pointer;
     border-bottom: 1px solid #D9D9D9; 
+    padding: 8px 10px;
+}
+
+.active-session{
+    background: #c5dcfd;
+    color: #2666ee;
 }
 
 .session-item-card{
@@ -32,6 +39,7 @@ body{
 .session-item-text{
     font-size: .9rem;
 }
+
 
 /* Loader style */
 
@@ -48,3 +56,18 @@ body{
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+.userimage{
+    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+}
+
+.chat-card{
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+  }
+
+.chat-username{
+    min-width: 165px;
+  }
+

@@ -13,6 +13,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://kit.fontawesome.com/c21bde7e2e.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous"></script>
+
 </head>
 <body>
     
@@ -75,16 +77,32 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card-body chat-card mt-5" id="chat-container">
+                    </div>
+
+                </div>
+                <div class="col-md-3" id="fixedCard" style="position: fixed;top: 83px;right:0">
+                    <div class="card shadow mt-3">
+                        <div class="userimagecontainer text-center py-3">
+                            <img src="{% static '/images/userimage.jpg'%}" alt="Signup Image" class="userimage">
+                        </div>
+                        <div class="text-center py-1">
+                            <strong>Albert Thomas</strong>
+                        </div>
+                        <div class="text-center text-muted">
+                            <p class="my-0">Expert Coach</p>
+                        </div>                        
+                        <div class="icon-container text-center py-2">
+                            <i class="fa-brands fa-facebook fa-lg px-1"></i>
+                            <i class="fab fa-instagram-square fa-lg  px-1"></i>
+                            <i class="fab fa-twitter-square fa-lg px-1"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-md-3">
 
-                </div>
             </div>
         </div>
-
-
-
     </div>
 </body>
 </html>

@@ -2,13 +2,17 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from ChatExplorerApp.Models.chatmodel import ChatModel
 import json
+from ChatExplorerApp.Models.usermodel import UserModel
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.db.models import Max
+from django.db.models import Q
 
-from ChatExplorerApp.Models.usermodel import UserModel
+from ChatExplorerApp.serializers import ChatModelSerializer
 
 # Create your views here.
 
@@ -19,23 +23,23 @@ def index(request):
 
 
 def save_to_db(request):
-    # # Change 'your_file_path.csv' to the actual path of your CSV file
-    # file_path = './Files/ChatExport.json'
+    #actual path of your CSV file
+    file_path = './Files/ChatExport.json'
     try:
-    #     with open(file_path, 'r') as file:
-    #         json_data = json.load(file)
+        with open(file_path, 'r') as file:
+            json_data = json.load(file)
 
-    #     # Loop through JSON data and save to the database
-    #     for item in json_data:
-    #         chat_instance = ChatModel(
-    #             sessionId=item['sessionId'],
-    #             userId=item['userId'],
-    #             messageId=item['messageId'],
-    #             message=item['message'],
-    #             createdAt=item['createdAt'],
-    #             updatedAt=item['updatedAt'],
-    #         )
-    #         chat_instance.save()
+        # Loop through JSON data and save to the database
+        for item in json_data:
+            chat_instance = ChatModel(
+                sessionId=item['sessionId'],
+                userId=item['userId'],
+                messageId=item['messageId'],
+                message=item['message'],
+                createdAt=item['createdAt'],
+                updatedAt=item['updatedAt'],
+            )
+            chat_instance.save()
 
 
         user_json_file = './Files/Users.json'
@@ -62,32 +66,43 @@ def save_to_db(request):
 
     return HttpResponse("Data saved to the database.")
 
-
+# create new account
 def signup(request):
-    user_exixt_check = False 
+    user_exist_check = False 
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
         print(username,email,password)
-        if User.objects.filter(username=username).exists():
-            # Handle the case where the user already exists
-            print("User already exists.")
-            user_exixt_check = True  # Set the flag to True
-            return render(request,"index.html",{'user_exist': user_exixt_check})
-        else:
-            # Create a new user
-            user = User.objects.create_user(username, email, password)
-            
-            # Optionally, you can log in the user after signup
-            # authenticate the user
-            user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            print("User created and logged in.")
-    return render(request,"index.html")
+        try:
+            # Check if the user already exists
+            user = User.objects.get(username=username)
+            if user:
+                print("User already exists.")
+                user_exist_check = True  # Set the flag to True
+                return render(request, "index.html", {'user_exist': user_exist_check})
+            else:
+                # Create a new user
+                user = User.objects.create_user(username, email, password)                
+                # Optionally, you can log in the user after signup
+                user = authenticate(request, username=username, password=password)
+                
+                if user is not None:
+                    login(request, user)
+                    print("User created and logged in.")
+                    # Redirect to a chat page 
+                    return redirect('ChatExplorerApp:chat')
+
+        except Exception as e:
+            print(f"Database error: {e}")
+            # Handle the error, e.g., display an error message to the user
+            return render(request, "index.html", {'error_message': 'An error occurred during signup.'})
+
+    return render(request, "signup.html")  # Replace "signup.html" with your actual signup page template
 
 
+
+# login
 def login_view(request):
     invalid_login = False 
     if request.method == 'POST':
@@ -101,7 +116,7 @@ def login_view(request):
             # Login the user
             login(request, user)
             print("User logged in.")
-            # Redirect to a success page or any other logic you want
+            # Redirect to a chat page 
             return redirect('ChatExplorerApp:chat')
 
         else:
@@ -121,8 +136,15 @@ def getsessions(request,user_id):
     return JsonResponse(sessions_data, safe=False)
 
 
-# Method for render index view
+# Method for render index view only if logged in
+@login_required(login_url='/')
 def chat(request):
     user_list = UserModel.objects.all()
-    print(user_list)
     return render(request,'chat.html',{'user_list':user_list})
+
+# Api Method for getting chat results with session_id and user_id
+@api_view(['GET'])
+def getchatresults(request,user_id,session_id):
+    chat_result = ChatModel.objects.filter(Q(userId=user_id) | Q(userId="taiwa-bot"), sessionId=session_id)
+    serializer = ChatModelSerializer(chat_result,many=True)
+    return Response(serializer.data)
