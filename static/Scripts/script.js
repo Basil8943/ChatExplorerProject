@@ -1,11 +1,12 @@
 // Variables
 
 let selectedUserId = "";
-let current_domain = "http://127.0.0.1:8000/"
-
+let selectedSessionId = "";
+let current_domain = "http://192.168.1.25:8000/"
+let session_list = []
 // Api call Method
 
-function api_call(url){
+function get_api_call(url){
     return new Promise(function (resolve, reject) {
         fetch(url)
           .then(response => response.json())
@@ -16,6 +17,38 @@ function api_call(url){
             reject(error);
           });
       });
+}
+
+
+
+
+function post_api_call(url,data){
+    return new Promise(function (resolve, reject) {
+        fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken() 
+            // You can add more headers if needed
+          },
+        })
+          .then(response => {
+            if (!response.ok) {
+              // Handle non-OK responses here
+              reject(response.statusText);
+              return;
+            }
+            return response.json();
+          })
+          .then(data => {
+            resolve(data);
+          })
+          .catch(error => {
+            reject(error);
+          });
+      });
+    
 }
 
 
@@ -43,41 +76,58 @@ $(window).scroll(function() {
     }
 });
 
+
+
+
+
+// Click Events
+
+    // Add a change event listener to the select box
+    $('#choose-btn').on('click', GetSessionList);
+
+    // Add a click event to save commented data
+    $('#comment-btn').on('click', SaveCommentToDB);
+
+
+
+
     
     var selectedValue = $('#userSelect').val();
-    console.log(selectedValue)
-    console.log("selectedvalue")
 
-    handleSelectChange();
+    GetSessionList();
 
     
     // Add a change event listener to the select box
-    $('#userSelect').on('change', handleSelectChange);
 
     // Function to handle the change event
-    function handleSelectChange() {
-        const chatContainer = $('#chat-container');
-        chatContainer.empty();
-        // Get the selected value
-        selectedUserId = $('#userSelect').val();
-        console.log(selectedValue)
-        let url = `${current_domain}/getsessions/${selectedUserId}`;
-        const sessionContainer = $('#session-container');
-        sessionContainer.empty();
-        $('#session-alert').addClass('d-none');
-        $('.loader').removeClass('d-none');
-        api_call(url)
-            .then(session_list => {
-                // The first function has completed, and you have the session_list
-                RenderSessionDetails(session_list);
-                
-            })
-            .catch(error => {
-                // Handle any errors from the API call
-                console.error("API call error:", error);
-            });
-    }
-
+// Function to handle the change event
+function GetSessionList() {
+    $('.comment-section').addClass('d-none');
+    // Reset Chat Content Values
+    const chatContainer = $('#chat-container');
+    chatContainer.empty();
+    $('#message-alert').removeClass('d-none');
+    // Get the selected value
+    selectedUserId = $('#userSelect').val();
+    let url = `${current_domain}/getsessions/${selectedUserId}`;
+    const sessionContainer = $('#session-container');
+    sessionContainer.empty();
+    $('#session-alert').addClass('d-none');
+    $('.loader').removeClass('d-none');
+    get_api_call(url)
+        .then(response => {
+            session_list = response;
+            // The first function has completed, and you have the session_list
+            RenderSessionDetails(session_list);
+            if(session_list.length > 0){
+                GetChatResults(session_list[0].sessionId);
+            }           
+        })
+        .catch(error => {
+            // Handle any errors from the API call
+            console.error("API call error:", error);
+        });
+}
 
     // For render Session Data
 
@@ -130,20 +180,38 @@ function toggleCard(cardId) {
 }
 
 
+
+
+
+// Method For Getting Chat Result with Session Id and UserId
+
 // Method For Getting Chat Result with Session Id and UserId
 
 function GetChatResults(session_id){
+    selectedSessionId = session_id;
     $(".session-item-flex").removeClass('active-session');
     $(`#${session_id}`).addClass('active-session');
-    let url = `${current_domain}getchatresults/${selectedUserId}/${session_id}`;
-    api_call(url)
+    $('.chat-alert-overlay').removeClass('d-none');
+    $('#message-alert').addClass('d-none');
+    let url = `${current_domain}/getchatresults/${selectedUserId}/${session_id}`;
+    get_api_call(url)
             .then(response => {
+                $('.chat-alert-overlay').addClass('d-none');
                 // The first function has completed, and you have the session_list
                 console.log("Response",response);
-                if(response.length > 0){
-                    RenderChatSession(response);
+                if(response.chat_data.length > 0){
+                    $('#message-alert').addClass('d-none');
+                    $('.comment-section').removeClass('d-none');
+                    RenderChatSession(response.chat_data);
+                }
+                else{
+                    $('#message-alert').removeClass('d-none');
+                }                
+                if(response.comment_data.length > 0){
+                    RenderCommentSession(response.comment_data);
                 }
                
+              
                 
             })
             .catch(error => {
@@ -172,3 +240,81 @@ function RenderChatSession(data){
         chatContainer.append(chatitem);
     })
 }
+
+function RenderCommentSession(data){
+    const commentContainer = $('#comment-container');
+    commentContainer.empty();
+    $.each(data, function (key, value) {
+        const commentitem = `<div class="card-body comment-card px-3 py-1 mt-3">
+        <div id="comment-container"></div>
+        <div class="row">
+            <strong class="commentby">${value.user_name}</strong>
+        </div>
+        <div class="comment-box pt-1 ps-3">
+                <p class="commenttext">${value.comment}</p>
+        </div>
+    </div>
+            `;
+            commentContainer.append(commentitem);
+    })
+}
+
+
+
+
+// method for saving comment to DB
+function SaveCommentToDB(){
+    const url = `${current_domain}/save_comment`
+    let comment = $("#comment-area").val()
+    let data = {
+        "comment": comment,
+        "session_id":selectedSessionId,
+        "user_id":selectedUserId
+    }
+    post_api_call(url,data)
+            .then(response => {
+                console.log("OuterResponce",response)
+                if(response.status == "success"){
+                    $("#comment-area").val("");
+                    GetUpdatedComments(selectedSessionId,selectedUserId)
+                    console.log("InnerResponce",response)
+                }       
+            })
+            .catch(error => {
+                // Handle any errors from the API call
+                console.error("API call error:", error);
+            });
+}
+
+
+// Get CSRF Token From Cookie
+
+function getCSRFToken() {
+    const name = "csrftoken=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+    for (let i = 0; i < cookieArray.length; i++) {
+      let cookie = cookieArray[i].trim();
+      if (cookie.indexOf(name) === 0) {
+        return cookie.substring(name.length, cookie.length);
+      }
+    }
+    return "";
+  }
+
+function GetUpdatedComments(selectedSessionId,selectedUserId){
+    let url = `${current_domain}/getcomments/${selectedUserId}/${selectedSessionId}`;
+    get_api_call(url)
+        .then(response => {
+            // The first function has completed, and you have the session_list
+            console.log("Response",response);                
+            if(response.comment_data.length > 0){
+                RenderCommentSession(response.comment_data);
+            }               
+        })
+        .catch(error => {
+            // Handle any errors from the API call
+            console.error("API call error:", error);
+        });
+}
+

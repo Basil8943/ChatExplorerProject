@@ -71,3 +71,75 @@ body{
     min-width: 165px;
   }
 
+
+  @media (min-width: 992px) {
+    #fixedCard {
+      position: fixed;
+      top: 83px;
+      right: 0;
+    }
+  }
+  
+.comment-card{
+    border: 3px solid #f7f3f3;
+    border-radius: 6px;
+    background-color:#e6f1ff;
+  }
+
+.commentby{
+    font-size: 11px;
+    color: #5778a3;
+}
+.comment-box{
+
+}
+
+.commenttext{
+    font-size: 13px;
+
+}
+
+.msg-alert-section{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.chat-loader{
+    border: 10px solid #f3f3f3; 
+    border-top: 10px solid #3498db;
+    border-radius: 50%;
+    width: 65px;
+    height: 65px;
+    animation: spin 1s linear infinite;
+
+  }
+
+  .message-text{
+    color: #00000096;
+    line-height: 1.5rem;
+}
+
+.alert-msg{
+    background: #f9e8eb;
+    color: #be2641;
+    border-radius: 4px;
+}
+
+#chat-container{
+    max-height: 500px;
+    overflow-y: auto;
+    min-height: 250px;
+}
+
+.chat-alert-overlay{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.335);
+    z-index: 999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

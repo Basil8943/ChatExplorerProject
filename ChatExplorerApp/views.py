@@ -2,6 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from ChatExplorerApp.Models.chatmodel import ChatModel
 import json
+from ChatExplorerApp.Models.commentmodel import CommentModel
 from ChatExplorerApp.Models.usermodel import UserModel
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
@@ -11,15 +12,18 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.db.models import Max
 from django.db.models import Q
+from ChatExplorerApp.serializers import ChatModelSerializer, CommentModelSerializer
 
-from ChatExplorerApp.serializers import ChatModelSerializer
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+
 
 # Create your views here.
 
 
 def index(request):
     
-    return render(request,"index.html")
+    return render(request,"index.html",{'show_login_card': True})
 
 
 def save_to_db(request):
@@ -80,7 +84,7 @@ def signup(request):
             if user:
                 print("User already exists.")
                 user_exist_check = True  # Set the flag to True
-                return render(request, "index.html", {'user_exist': user_exist_check})
+                return render(request, "index.html", {'user_exist': user_exist_check,'show_signup_card': True})
             else:
                 # Create a new user
                 user = User.objects.create_user(username, email, password)                
@@ -96,15 +100,16 @@ def signup(request):
         except Exception as e:
             print(f"Database error: {e}")
             # Handle the error, e.g., display an error message to the user
-            return render(request, "index.html", {'error_message': 'An error occurred during signup.'})
+            return render(request, "index.html", {'error_message': 'An error occurred during signup.','show_signup_card': True})
 
-    return render(request, "signup.html")  # Replace "signup.html" with your actual signup page template
-
+    return render(request, "signup.html",{'show_signup_card': True})  # Replace "signup.html" with your actual signup page template
 
 
 # login
-def login_view(request):
-    invalid_login = False 
+# Api Method for Getting All Session Data
+def Userlogin(request):
+    invalid_login = False
+    loadercheck=True 
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -116,14 +121,13 @@ def login_view(request):
             # Login the user
             login(request, user)
             print("User logged in.")
-            # Redirect to a chat page 
+            # Redirect to a chat page
             return redirect('ChatExplorerApp:chat')
-
         else:
             # Handle invalid login credentials
             print("Invalid login credentials.")
             invalid_login = True  # Set the flag to True
-            return render(request,"index.html",{'invalid_login': invalid_login})
+            return render(request,"index.html",{'invalid_login': invalid_login,'loadercheck': loadercheck,'show_login_card': True})
 
     return render(request,"signup.html")
 
@@ -146,5 +150,57 @@ def chat(request):
 @api_view(['GET'])
 def getchatresults(request,user_id,session_id):
     chat_result = ChatModel.objects.filter(Q(userId=user_id) | Q(userId="taiwa-bot"), sessionId=session_id)
-    serializer = ChatModelSerializer(chat_result,many=True)
-    return Response(serializer.data)
+    chat_serializer = ChatModelSerializer(chat_result,many=True)
+    comment_result = CommentModel.objects.filter(Q(user_id=user_id) | Q(user_id="taiwa-bot"), session_id=session_id)
+    comment_serializer = CommentModelSerializer(comment_result,many=True)
+    response_data = {
+        'chat_data': chat_serializer.data,
+        'comment_data': comment_serializer.data,
+    }
+    print(response_data)
+    return Response(response_data)
+
+
+@api_view(['POST'])
+def save_comment(request):
+    if request.method == 'POST':
+        try:
+            comment = request.data['comment']
+            session_id = request.data['session_id']
+            user_id = request.data['user_id']
+            # get id of logged user
+            if request.user.is_authenticated:
+                # Check if the user object has an 'id' attribute
+                if hasattr(request.user, 'id'):
+                    commented_user_id = request.user.id
+                    # save comment to CommentModel
+                    comment_data = CommentModel.objects.create(comment=comment, session_id=session_id, user_id=user_id,commented_user_id=commented_user_id)
+                    
+                    return JsonResponse({'status': 'success'})
+                else:
+                    raise AttributeError("User object does not have 'id' attribute")
+        
+        except Exception as e:
+            # Log the exception for debugging purposes
+            print(f"Error saving comment: {e}")
+
+            # Return an error response
+            return JsonResponse({'status': 'error', 'message': 'Error saving comment'})
+    else:
+        # Return a bad request response if the request method is not POST
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+
+# Api Method for getting comments with session_id and user_id
+@api_view(['GET'])
+def getcomments(request,user_id,session_id):
+    comment_result = CommentModel.objects.filter(Q(user_id=user_id) | Q(user_id="taiwa-bot"), session_id=session_id)
+    comment_serializer = CommentModelSerializer(comment_result,many=True)
+    response_data = {
+        'comment_data': comment_serializer.data,
+    }
+    print(response_data)
+    return Response(response_data)
+
+
+
