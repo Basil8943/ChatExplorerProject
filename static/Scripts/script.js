@@ -2,7 +2,7 @@
 
 let selectedUserId = "";
 let selectedSessionId = "";
-let current_domain = "http://192.168.1.25:8000/"
+let current_domain = "http://127.0.0.1:8000/"
 let session_list = []
 // Api call Method
 
@@ -114,6 +114,8 @@ function GetSessionList() {
     sessionContainer.empty();
     $('#session-alert').addClass('d-none');
     $('.loader').removeClass('d-none');
+    const commentContainer = $('#comment-container');
+    commentContainer.empty();
     get_api_call(url)
         .then(response => {
             session_list = response;
@@ -232,9 +234,8 @@ function RenderChatSession(data){
             </div>
 
             <div class="ms-lg-2 ms-0">
-                <h6 class="m-0">${value.message}</h6>
+                <h6 class="m-0 message-text">${value.message}</h6>
             </div>
-
         </div>
             `;
         chatContainer.append(chatitem);
@@ -264,18 +265,30 @@ function RenderCommentSession(data){
 
 // method for saving comment to DB
 function SaveCommentToDB(){
-    const url = `${current_domain}/save_comment`
     let comment = $("#comment-area").val()
+    const save_comment_url = `${current_domain}/save_comment`
+    if(comment == ""){
+        showtoastnotification("Comment cannot be empty. Please enter a comment.","#f1433d")
+    }
+    else{
+        // Spinner Loading
+        $('.spinner-comment-btn').removeClass('d-none');
+        // Disabling Comment Button
+        $("#comment-btn").prop("disabled", true);
+    }
     let data = {
         "comment": comment,
         "session_id":selectedSessionId,
         "user_id":selectedUserId
     }
-    post_api_call(url,data)
+    post_api_call(save_comment_url,data)
             .then(response => {
                 console.log("OuterResponce",response)
                 if(response.status == "success"){
+                    showtoastnotification("Comment saved successfully.","#49c282")
                     $("#comment-area").val("");
+                    $("#comment-btn").prop("disabled", false);
+                    $('.spinner-comment-btn').addClass('d-none');
                     GetUpdatedComments(selectedSessionId,selectedUserId)
                     console.log("InnerResponce",response)
                 }       
@@ -285,7 +298,6 @@ function SaveCommentToDB(){
                 console.error("API call error:", error);
             });
 }
-
 
 // Get CSRF Token From Cookie
 
@@ -318,3 +330,13 @@ function GetUpdatedComments(selectedSessionId,selectedUserId){
         });
 }
 
+
+function showtoastnotification(message,color){
+    Toastify({
+        text: message,
+        style: {
+            background: color,
+        },
+        position: "center",
+      }).showToast();
+}
