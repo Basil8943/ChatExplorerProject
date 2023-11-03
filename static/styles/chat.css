@@ -87,12 +87,20 @@ body{
   }
 
 .commentby{
-    font-size: 11px;
+    font-size: 12px;
     color: #5778a3;
+    text-transform: capitalize;
 }
-.comment-box{
 
+.cbytext{
+    font-size: 12px;
 }
+
+.comment-by-row span,
+.comment-by-row strong.commentby {
+    display: inline;
+}
+
 
 .commenttext{
     font-size: 13px;
@@ -143,3 +151,35 @@ body{
     justify-content: center;
     align-items: center;
 }
+
+.welcometext{
+    font-size: 13px;
+    font-weight: 400;   
+}
+
+.mailtext{
+    font-size: 12px;
+}
+
+.logouttext{
+    color:#000;
+    font-weight: bold;
+}
+
+.replaytext{
+    font-size: 12px;
+    color: #3498db;
+    /* border: 1px solid #3498db; */
+    border-radius: 4px;
+    cursor: pointer;
+}
+.textareabox{
+    
+}
+
+.textareainput{
+    outline: 1px solid #3498db !important; 
+    border-radius:4px;
+}
+
+

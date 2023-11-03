@@ -26,7 +26,9 @@ class ChatModelSerializer(serializers.ModelSerializer):
 class CommentModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentModel
-        fields = ['comment', 'session_id', 'user_id']
+        fields = ['id','comment', 'session_id', 'user_id' ,'response']
+
+
 
 
     def to_representation(self, instance):

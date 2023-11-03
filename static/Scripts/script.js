@@ -89,7 +89,8 @@ $(window).scroll(function() {
     $('#comment-btn').on('click', SaveCommentToDB);
 
 
-
+    // Disabling of comment button based on text-area input
+    $('#comment-area').on('input', ActivateCommentbtn);
 
     
     var selectedValue = $('#userSelect').val();
@@ -173,13 +174,13 @@ function GetSessionList() {
 
 
 function toggleCard(cardId) {
-    // Hide all cards
+    // Hide onecard cards
     document.getElementById('signupcard').style.display = 'none';
     document.getElementById('logincard').style.display = 'none';
-
     // Show the selected card
     document.getElementById(cardId).style.display = 'block';
 }
+
 
 
 
@@ -246,15 +247,86 @@ function RenderCommentSession(data){
     const commentContainer = $('#comment-container');
     commentContainer.empty();
     $.each(data, function (key, value) {
-        const commentitem = `<div class="card-body comment-card px-3 py-1 mt-3">
-        <div id="comment-container"></div>
-        <div class="row">
-            <strong class="commentby">${value.user_name}</strong>
-        </div>
-        <div class="comment-box pt-1 ps-3">
-                <p class="commenttext">${value.comment}</p>
-        </div>
-    </div>
+        const commentitem = `
+        <div class="card-body chat-card mt-3">
+                        <div class="card-body comment-card py-1">
+                            <div id="comment-container"></div>
+                            <div class="comment-by-row">
+                                <span class="cbytext">Commented by </span>
+                                <strong class="commentby">${value.user_name}</strong>
+                            </div>
+                            <div class="comment-box pt-1 ps-3">
+                                    <p class="commenttext">${value.comment}</p>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-11">
+                                    <div class="textareabox d-none replaysection">
+                                        <textarea class="textareainput w-100" style=""></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 mt-auto">
+                                    <div class="replaydiv text-end replayactive">
+                                        <span class="replaytext px-1">
+                                            <i class="fa-solid fa-reply pe-1 fa-sm"></i>
+                                            Replay
+                                        </span>
+                                    </div>
+                                    <div class="d-none replaysection">
+                                        <div class="replaydiv text-center mb-1">
+                                            <span class="replaytext px-1">
+                                                Cancel
+                                            </span>
+                                        </div>
+                                        <div class="replaydiv text-center">
+                                            <span class="replaytext px-1">
+                                                Comment
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ms-5">
+                        <div class="card-body comment-card px-3 py-1 mb-3">
+                            <div id="comment-container"></div>
+                            <div class="comment-by-row">
+                                <span class="cbytext">Responsed by </span>
+                                <strong class="commentby">${value.user_name}</strong>
+                            </div>
+                            <div class="comment-box pt-1 ps-3">
+                                    <p class="commenttext">${value.comment}</p>
+                            </div>
+                            <div class="row">
+                            <div class="col-md-11">
+                                <div class="textareabox d-none replaysection">
+                                    <textarea class="textareainput w-100" style=""></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-1 mt-auto">
+                                <div class="replaydiv text-end replayactive">
+                                    <span class="replaytext px-1">
+                                        <i class="fa-solid fa-reply pe-1 fa-sm"></i>
+                                        Replay
+                                    </span>
+                                </div>
+                                <div class="d-none replaysection">
+                                    <div class="replaydiv text-center mb-1">
+                                        <span class="replaytext px-1">
+                                            Cancel
+                                        </span>
+                                    </div>
+                                    <div class="replaydiv text-center">
+                                        <span class="replaytext px-1">
+                                            Comment
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
             `;
             commentContainer.append(commentitem);
     })
@@ -267,15 +339,11 @@ function RenderCommentSession(data){
 function SaveCommentToDB(){
     let comment = $("#comment-area").val()
     const save_comment_url = `${current_domain}/save_comment`
-    if(comment == ""){
-        showtoastnotification("Comment cannot be empty. Please enter a comment.","#f1433d")
-    }
-    else{
-        // Spinner Loading
-        $('.spinner-comment-btn').removeClass('d-none');
-        // Disabling Comment Button
-        $("#comment-btn").prop("disabled", true);
-    }
+    // Spinner Loading
+    $('.spinner-comment-btn').removeClass('d-none');
+    // Disabling Comment Button
+    $("#comment-btn").prop("disabled", true);
+    
     let data = {
         "comment": comment,
         "session_id":selectedSessionId,
@@ -287,7 +355,6 @@ function SaveCommentToDB(){
                 if(response.status == "success"){
                     showtoastnotification("Comment saved successfully.","#49c282")
                     $("#comment-area").val("");
-                    $("#comment-btn").prop("disabled", false);
                     $('.spinner-comment-btn').addClass('d-none');
                     GetUpdatedComments(selectedSessionId,selectedUserId)
                     console.log("InnerResponce",response)
@@ -340,3 +407,5 @@ function showtoastnotification(message,color){
         position: "center",
       }).showToast();
 }
+
+

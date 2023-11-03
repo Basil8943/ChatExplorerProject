@@ -14,6 +14,13 @@
               <a class="navbar-brand py-2" href="#">
                 <img src="{% static 'images/logo.png' %}" alt="" width="200" height="50" class="d-inline-block align-text-top">
               </a>
+              <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item pe-3">
+                        <a class="nav-link logouttext" href="{% url 'ChatExplorerApp:userlogout' %}"">Logout</a>
+                    </li>
+                {% endif %}
+            </ul>
             </div>
         </nav>
 
@@ -82,23 +89,77 @@
                     <div class="comment-section d-none">
                         <div class="row">
                             <div class="my-3">
-                                <textarea class="form-control" rows="3" id="comment-area"></textarea>
+                                <textarea class="form-control" placeholder="Enter your Comments" rows="3" id="comment-area"></textarea>
                             </div>                            
                         </div>
     
                         <div class="row">
                             <div class="mb-3 text-end">
-                                <button class="btn btn-primary" id="comment-btn">
+                                <button class="btn btn-primary" disabled id="comment-btn">
                                     <span class="spinner-border spinner-border-sm d-none spinner-comment-btn" role="status" aria-hidden="true"></span>
                                     Comment
                                 </button>
                             </div>
                         </div>
                                             <!-- comments displayed here -->
-                    <div class="card-body chat-card mt-5" id="comment-container">
+                    <div class="card-body chat-card mt-3 p-2" id="comment-container">
+                        
                     </div>
 
                     </div>
+                    
+                    <!-- <div class="card-body chat-card mt-3">
+                        <div class="card-body comment-card py-1">
+                            <div id="comment-container"></div>
+                            <div class="comment-by-row">
+                                <span class="cbytext">Commented by </span>
+                                <strong class="commentby">Basil</strong>
+                            </div>
+                            <div class="comment-box pt-1 ps-3">
+                                    <p class="commenttext">Great Work.. Keep it going..</p>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-11">
+                                    <div class="textareabox d-none replaysection">
+                                        <textarea class="textareainput w-100" style=""></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 mt-auto">
+                                    <div class="replaydiv text-end replayactive">
+                                        <button class="replaytext px-1">
+                                            <i class="fa-solid fa-reply pe-1 fa-sm"></i>
+                                            Replay
+                                        </button>
+                                    </div>
+                                    <div class="d-none replaysection">
+                                        <div class="replaydiv text-center mb-1">
+                                            <button class="replaytext px-1">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                        <div class="replaydiv text-center">
+                                            <button class="replaytext px-1">
+                                                Comment
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ms-5">
+                        <div class="card-body comment-card px-3 py-1 mb-3">
+                            <div id="comment-container"></div>
+                            <div class="comment-by-row">
+                                <span class="cbytext">Responsed by </span>
+                                <strong class="commentby">Basil</strong>
+                            </div>
+                            <div class="comment-box pt-1 ps-3">
+                                    <p class="commenttext">Great Work.. Keep it going..</p>
+                            </div>
+                        </div>
+                    </div> -->
                     
                     
                     
@@ -115,10 +176,15 @@
                             <img src="{% static '/images/userimage.jpg'%}" alt="Signup Image" class="userimage">
                         </div>
                         <div class="text-center py-1">
-                            <strong>Albert Thomas</strong>
+                            {% if user_details.full_name %}
+                                <span class="welcometext text-muted">Welcome, </span><strong>{{ user_details.full_name }}</strong>
+                            {% endif %}
                         </div>
                         <div class="text-center text-muted">
-                            <p class="my-0">Expert Coach</p>
+                            {% if user_details.email %}
+                            <p class="my-0 mailtext">{{user_details.email}}</p>
+                            {% endif %}
+
                         </div>                        
                         <div class="icon-container text-center py-2">
                             <i class="fa-brands fa-facebook fa-lg px-1"></i>
@@ -132,4 +198,7 @@
             </div>
         </div>
     </div>
+
+      
+
 {% endblock %}

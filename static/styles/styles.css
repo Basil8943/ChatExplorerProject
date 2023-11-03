@@ -6,7 +6,7 @@ body {
 
 
 .signupcard{
-    width: 70%;
+    width: 80%;
     margin: auto;
 }
 
@@ -18,19 +18,36 @@ body {
 .signupsection{
     border: 2px solid #daebf4;
     border-radius: 5px;
+    width: 93%;
+}
+
+.signuptext{
+    border-bottom: 2px solid #a4b0be;
+    background-color: aliceblue;
 }
 
 
+.loginsection{
+    border: 2px solid #daebf4;
+    border-radius: 5px;
+}
+
+
+input::placeholder {
+    font-size: 12px;
+    color:#57606f;
+}
+
 
 .headText{
-    font-family: math;
+    font-family: serif;
     font-size: 25px;
     color: #1e90ff;
     font-weight: bold;
 }
 
 .formsection label{
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 600;
     color:#57606f;
 }
@@ -51,6 +68,7 @@ body {
     font-size: 12px;
     text-decoration:underline;
     font-weight: 500;
+    cursor:pointer;
 }
 
 #signupcard {
@@ -61,6 +79,7 @@ body {
     font-size: 14px;
     font-weight: bold;
 }
+
 
 /* Loader style */
 

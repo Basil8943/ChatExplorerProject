@@ -11,34 +11,34 @@
                 <div class="col-md-6">
                     <img src="{% static '/images/signup.jpg'%}" alt="Signup Image" class="img-fluid">
                 </div>
-                <div class="col-md-6 p-4 text-center">
+                <div class="col-md-6 p-4 ps-0 text-center">
                     <div class="row justify-content-end">
                         <div class="text-end">
                             <img src="{% static '/images/logo.png'%}" alt="companylogo" class="img-fluid companylogo">
                         </div>
                     </div>
-                    <div class="signupsection mt-3 w-75 shadow" id="logincard"  {% if show_login_card %}style="display: block;"{% else %}style="display: none;"{% endif %}>
-                        <div class="signuptext shadow">
-                            <h2 class="headText py-2">Login</h2>
+                    <div class="loginsection w-75 shadow ms-4 mt-4" id="logincard"  {% if show_login_card %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                        <div class="signuptext">
+                            <h2 class="headText pt-2">Login</h2>
                         </div>
                         <div class="formsection p-3 py-4">
                             <form method="post" action="{% url 'ChatExplorerApp:Userlogin' %}">
                                 {% csrf_token %}
-                                <div class="form-group text-start mb-3">
-                                    <label for="exampleFormControlInput1">Enter Username:</label>
-                                    <input type="text" class="inputlabel px-2 w-100"  name="username"   id="loginusername" placeholder="Enter username">
+                                <div class="form-group text-start mb-4">
+                                    <label for="exampleFormControlInput1">Enter Email:</label>
+                                    <input type="email" class="inputlabel px-2 w-100"  name="email"   id="loginmail" placeholder="Enter Emailid">
                                   </div>
                                   <div class="form-group text-start mb-4">
                                     <label for="exampleFormControlInput1">Enter Password</label>
                                     <input type="password" class="inputlabel px-2 w-100"  name="password" id="loginpassword" placeholder="Enter Password">
                                   </div>
-                                  <div class="">
-                                      <button type="submit" class="btn btn-primary w-75">
-                                            Login
-                                        </button>
+                                  <div class="pt-2">
+                                      <button type="submit" class="btn btn-primary w-75">Login</button>
                                   </div>
+                                  
                                   <div class="d-flex justify-content-center pt-3">
-                                    <p class="donttext px-2">Don't have an account?</p><a class="newlink pl-2"  onclick="toggleCard('signupcard')">SignUp</a>
+                                    <p class="donttext px-2">Don't have an account?</p>
+                                    <a class="newlink pl-2"  onclick="toggleCard('signupcard')">SignUp</a>
                                 </div>
                                 {% if invalid_login %}
                                     <div class="text-danger invalidtext">Invalid Login</div>
@@ -46,28 +46,57 @@
                             </form>
                         </div>
                     </div>
-
-                    <div class="signupsection mt-3 w-75 shadow" id="signupcard" {% if show_signup_card %}style="display: block;"{% else %}style="display: none;"{% endif %}>
-                        <div class="signuptext shadow">
+                    <div class="signupsection mt-3 shadow" id="signupcard" {% if show_signup_card %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                        <div class="signuptext">
                             <h2 class="headText py-2">SignUp</h2>
                         </div>
                         <div class="formsection p-3 py-3">
                             <form method="post" action="{% url 'ChatExplorerApp:signup' %}">
                                 {% csrf_token %}
-                                <div class="form-group text-start mb-3">
-                                    <label for="exampleFormControlInput1">Enter Username:</label>
-                                    <input type="text" class="inputlabel px-2 w-100" name="username"  id="username" placeholder="Enter username">
-                                  </div>
-                                  <div class="form-group text-start mb-3">
-                                    <label for="exampleFormControlInput1">Enter Email ID</label>
-                                    <input type="email" class="inputlabel px-2 w-100" name="email" id="email" placeholder="Enter Email Address">
-                                  </div>
-                                  <div class="form-group text-start mb-3">
-                                    <label for="exampleFormControlInput1">Enter Password</label>
-                                    <input type="password" class="inputlabel px-2 w-100" name="password" id="password" placeholder="Enter Password">
-                                  </div>
-                                  <div class="">
-                                      <button type="submit" class="btn btn-primary w-75">SignUp</button>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group text-start mb-3">
+                                            <label for="exampleFormControlInput1">Enter FirstName:</label>
+                                            <input type="text" class="inputlabel px-2 w-100" name="firstname"  id="firstname" placeholder="Enter Firstname">
+                                          </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group text-start mb-3">
+                                            <label for="exampleFormControlInput1">Enter LastName:</label>
+                                            <input type="text" class="inputlabel px-2 w-100" name="lastname"  id="lastname" placeholder="Enter Lastname">
+                                          </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group text-start mb-3">
+                                            <label for="exampleFormControlInput1">Enter Username:</label>
+                                            <input type="text" class="inputlabel px-2 w-100" name="username"  id="username" placeholder="Enter username">
+                                          </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group text-start mb-3">
+                                            <label for="exampleFormControlInput1">Enter Email ID</label>
+                                            <input type="email" class="inputlabel px-2 w-100" name="email" id="email" placeholder="Enter Email Address">
+                                          </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group text-start mb-3">
+                                            <label for="exampleFormControlInput1">Enter Password</label>
+                                            <input type="password" class="inputlabel px-2 w-100" name="password" id="password" placeholder="Enter Password">
+                                          </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group text-start mb-3">
+                                            <label for="exampleFormControlInput1">Confirm Password</label>
+                                            <input type="password" class="inputlabel px-2 w-100" name="cpassword" id="cpassword" placeholder="Confirm Password">
+                                          </div>
+                                    </div>
+                                </div>
+                                  <div class="mt-3">
+                                      <button type="submit" class="btn btn-primary w-50">SignUp</button>
                                   </div>
                                   <div class="d-flex justify-content-center pt-3">
                                     <p class="donttext px-2">Already have an account</p><a class="newlink pl-2" onclick="toggleCard('logincard')">Login</a>

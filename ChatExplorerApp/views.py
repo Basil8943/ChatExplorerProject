@@ -13,9 +13,8 @@ from django.http import JsonResponse
 from django.db.models import Max
 from django.db.models import Q
 from ChatExplorerApp.serializers import ChatModelSerializer, CommentModelSerializer
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from django.contrib.auth import logout
+import uuid
 
 
 # Create your views here.
@@ -74,36 +73,58 @@ def save_to_db(request):
 def signup(request):
     user_exist_check = False 
     if request.method == 'POST':
+        firstname = request.POST['firstname']
+        lastname = request.POST['lastname']
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
-        print(username,email,password)
-        try:
-            # Check if the user already exists
-            user = User.objects.get(username=username)
-            if user:
+        cpassword = request.POST['cpassword']
+        print(username, email, password)
+
+        if password != cpassword:
+            return render(request, "signup.html", {'error_message': 'Passwords do not match.', 'show_signup_card': True})
+        else:
+            try:
+                # Check if the user already exists
+                print("A")
+                user = User.objects.get(username=username)
+                print("B")
+
+                # User found, user already exists
                 print("User already exists.")
                 user_exist_check = True  # Set the flag to True
-                return render(request, "index.html", {'user_exist': user_exist_check,'show_signup_card': True})
-            else:
-                # Create a new user
-                user = User.objects.create_user(username, email, password)                
-                # Optionally, you can log in the user after signup
-                user = authenticate(request, username=username, password=password)
+                return render(request, "index.html", {'user_exist': user_exist_check, 'show_signup_card': True})
+            
+            except User.DoesNotExist:
+                # User does not exist, proceed to create a new user
+                try:
+                    # Create a new user
+                    user = User.objects.create_user(username=username, email=email, password=password, first_name=firstname, last_name=lastname)
+                    
+                    # Optionally, you can log in the user after signup
+                    user = authenticate(request, username=username, password=password)
+                    
+                    if user is not None:
+                        login(request, user)
+                        print("User created and logged in.")
+
+                        first_name = request.user.first_name
+                        last_name = request.user.last_name
+                        full_name = f"{first_name} {last_name}"
+
+                        request.session['user_full_name'] = full_name
+                        request.session['user_email'] = email
+
+
+                        # Redirect to a chat page 
+                        return redirect('ChatExplorerApp:chat')
                 
-                if user is not None:
-                    login(request, user)
-                    print("User created and logged in.")
-                    # Redirect to a chat page 
-                    return redirect('ChatExplorerApp:chat')
+                except Exception as e:
+                    print(f"Database error: {e}")
+                    # Handle the error, e.g., display an error message to the user
+                    return render(request, "index.html", {'error_message': 'An error occurred during signup.', 'show_signup_card': True})
 
-        except Exception as e:
-            print(f"Database error: {e}")
-            # Handle the error, e.g., display an error message to the user
-            return render(request, "index.html", {'error_message': 'An error occurred during signup.','show_signup_card': True})
-
-    return render(request, "signup.html",{'show_signup_card': True})  # Replace "signup.html" with your actual signup page template
-
+    return render(request, "signup.html", {'show_signup_card': True})
 
 # login
 # Api Method for Getting All Session Data
@@ -111,16 +132,23 @@ def Userlogin(request):
     invalid_login = False
     loadercheck=True 
     if request.method == 'POST':
-        username = request.POST['username']
+        email = request.POST['email']
         password = request.POST['password']
-        print(username,password)
+        print(email,password)
         # Authenticate the user
-        user = authenticate(request, username=username, password=password)
-
+        userObj = User.objects.get(email=email)
+        user = authenticate(request, username=userObj.username, password=password)
+        
         if user is not None:
             # Login the user
             login(request, user)
             print("User logged in.")
+            first_name = request.user.first_name
+            last_name = request.user.last_name
+            full_name = f"{first_name} {last_name}"
+            request.session['user_full_name'] = full_name
+            request.session['user_email'] = email
+
             # Redirect to a chat page
             return redirect('ChatExplorerApp:chat')
         else:
@@ -144,7 +172,15 @@ def getsessions(request,user_id):
 @login_required(login_url='/')
 def chat(request):
     user_list = UserModel.objects.all()
-    return render(request,'chat.html',{'user_list':user_list})
+    # Retrieve user details from the session
+    user_full_name = request.session.get('user_full_name', '')
+    user_email = request.session.get('user_email', '')
+    user_details = {
+            'full_name': user_full_name,
+            'email': user_email,
+        }
+
+    return render(request, 'chat.html', {'user_list': user_list, 'user_details': user_details})
 
 # Api Method for getting chat results with session_id and user_id
 @api_view(['GET'])
@@ -174,7 +210,7 @@ def save_comment(request):
                 if hasattr(request.user, 'id'):
                     commented_user_id = request.user.id
                     # save comment to CommentModel
-                    comment_data = CommentModel.objects.create(comment=comment, session_id=session_id, user_id=user_id,commented_user_id=commented_user_id)
+                    CommentModel.objects.create(comment=comment, session_id=session_id, user_id=user_id,commented_user_id=commented_user_id,response = None)
                     
                     return JsonResponse({'status': 'success'})
                 else:
@@ -201,6 +237,48 @@ def getcomments(request,user_id,session_id):
     }
     print(response_data)
     return Response(response_data)
+@api_view(['POST'])
+def save_response(request):
+    if request.user.is_authenticated:
+        response_user_id = request.user.id
+    else:
+        return Response({
+        "message":"Authentication Failed",
+        "status":False
+        })
+    try:
+        response = request.data['response']
+        print(f"response : {response}")
+        response_json = json.loads(response)
+        print(f"response_json : {response}")
+        comment_id = response_json['comment_id']
+        exist_comment = CommentModel.objects.get(id = comment_id)
+        respose_instance = {
+                "response_id":str(uuid.uuid4()),
+                "response_text":response_json['response_text'],
+                "response_user_id": response_user_id,
+                "response_username":request.user.first_name + " " + request.user.last_name
+            }
+        print(f"ResponseInstance : {respose_instance}")
+        if exist_comment.response is None:  
+            exist_comment.response = [respose_instance]
+        else:
+            exist_comment.response.append(respose_instance)
+        exist_comment.save()
+        return Response({
+            "message":"Successfully Saved",
+            "status":True
+        })
+    except Exception as e:
+        print(f"Exception:{e}")
+        return Response({
+            "message":"Error Occured While Saving",
+            "status":False
+        })
 
+
+def userlogout(request):
+    logout(request)
+    return redirect("/")
 
 

@@ -6,4 +6,6 @@ class CommentModel(models.Model):
     session_id = models.CharField(max_length=100)
     user_id = models.CharField(max_length=100)
     commented_user_id = models.IntegerField()
+    # added additional field to add response data 
+    response = models.JSONField()
 
