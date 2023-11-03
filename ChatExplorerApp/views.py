@@ -237,6 +237,9 @@ def getcomments(request,user_id,session_id):
     }
     print(response_data)
     return Response(response_data)
+
+
+
 @api_view(['POST'])
 def save_response(request):
     if request.user.is_authenticated:
@@ -247,15 +250,12 @@ def save_response(request):
         "status":False
         })
     try:
-        response = request.data['response']
-        print(f"response : {response}")
-        response_json = json.loads(response)
-        print(f"response_json : {response}")
-        comment_id = response_json['comment_id']
+        response_text = request.data['response_text']
+        comment_id = request.data['comment_id']
         exist_comment = CommentModel.objects.get(id = comment_id)
         respose_instance = {
                 "response_id":str(uuid.uuid4()),
-                "response_text":response_json['response_text'],
+                "response_text":response_text,
                 "response_user_id": response_user_id,
                 "response_username":request.user.first_name + " " + request.user.last_name
             }
@@ -275,7 +275,6 @@ def save_response(request):
             "message":"Error Occured While Saving",
             "status":False
         })
-
 
 def userlogout(request):
     logout(request)

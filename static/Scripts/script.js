@@ -251,101 +251,115 @@ function RenderChatSession(data){
     })
 }
 
-function RenderCommentSession(data){
+function RenderCommentSession(data) {
     const commentContainer = $('#comment-container');
     commentContainer.empty();
+
     $.each(data, function (key, value) {
-        const commentitem = `
-        <div class="card-body chat-card mt-3">
-                        <div class="card-body comment-card py-1">
-                            <div id="comment-container"></div>
-                            <div class="comment-by-row">
-                                <span class="cbytext">Commented by </span>
-                                <strong class="commentby">${value.user_name}</strong>
-                            </div>
-                            <div class="comment-box pt-1 ps-3">
-                                    <p class="commenttext">${value.comment}</p>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-11">
-                                    <div class="textareabox d-none replaysection">
-                                        <textarea class="textareainput w-100" style=""></textarea>
-                                    </div>
-                                </div>
-                                <div class="col-md-1 mt-auto">
-                                    <div class="replaydiv text-end replayactive">
-                                        <span class="replaytext px-1">
-                                            <i class="fa-solid fa-reply pe-1 fa-sm"></i>
-                                            Replay
-                                        </span>
-                                    </div>
-                                    <div class="d-none replaysection">
-                                        <div class="replaydiv text-center mb-1">
-                                            <span class="replaytext px-1">
-                                                Cancel
-                                            </span>
-                                        </div>
-                                        <div class="replaydiv text-center">
-                                            <span class="replaytext px-1">
-                                                Comment
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
+        const commentParts = [
+            '<div class="card-body chat-card mt-3">',
+            '<div class="card-body comment-card py-1">',
+            '<div class="comment-by-row">',
+            '<span class="cbytext">Commented by </span>',
+            '<strong class="commentby">' + value.user_name + '</strong>',
+            '</div>',
+            '<div class="comment-box pt-1 ps-3">',
+            '<p class="commenttext">' + value.comment + '</p>',
+            '</div>',
+            '<div class="row">',
+            '<div class="col-md-11">',
+            '<div class="textareabox d-none replaysection responsearea_' + value.id + '">',
+            '<textarea class="textareainput w-100" style=""  id="textarea_' + value.id + '"></textarea>',
+            '</div>',
+            '</div>',
+            '<div class="col-md-1 mt-auto">',
+            '<div class="replaydiv text-end replayactive">',
+            '<span class="replaytext px-1" id="replay_' + value.id  + '" onClick="ShowTextarea(' + `'${value.id }'` + ')">',
+            '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+            'Replay',
+            '</span>',
+            '</div>',
+            '<div class="d-none replaysection responsearea_' + value.id  + '"">',
+            '<div class="replaydiv text-center mb-1"   onClick="HideTextarea(' + `'${value.id }'` + ')"> ',
+            '<span class="replaytext px-1">',
+            'Cancel',
+            '</span>',
+            '</div>',
+            '<div class="replaydiv text-center">',
+            '<span class="replaytext px-1"  onClick=SaveResponseToDb(' + `'${value.id}'` + ',' + `'${value.id}'` + ')>',
+            'Comment',
+            '</span>',
+            '</div>',
+            '</div>',
+            '</div>',
+            '</div>',
+            '</div>',
+            '</div>'
+        ];
 
-            `;
-    $.each(data.response, function (index, responseitem) {
-        console.log("ResponseItem",data.response)
-        const responseItem = `<div class="ms-5">
-                    <div class="card-body comment-card px-3 py-1 mb-3">
-                        <div id="comment-container"></div>
-                        <div class="comment-by-row">
-                            <span class="cbytext">Responsed by </span>
-                            <strong class="commentby">${responseitem.response_username}</strong>
-                        </div>
-                        <div class="comment-box pt-1 ps-3">
-                                <p class="commenttext">${responseitem.response_text}</p>
-                        </div>
-                        <div class="row">
-                        <div class="col-md-11">
-                            <div class="textareabox d-none replaysection" id="textarea_${responseitem.response_id}">
-                                <textarea class="textareainput w-100" style=""></textarea>
-                            </div>
-                        </div>
-                        <div class="col-md-1 mt-auto">
-                            <div class="replaydiv text-end replayactive">
-                                <span class="replaytext px-1" id="replay_${responseitem.response_id}" onClick="ShowTextarea(${responseitem.response_id})">
-                                    <i class="fa-solid fa-reply pe-1 fa-sm"></i>
-                                    Replay
-                                </span>
-                            </div>
-                            <div class="d-none replaysection">
-                                <div class="replaydiv text-center mb-1">
-                                    <span class="replaytext px-1">
-                                        Cancel
-                                    </span>
-                                </div>
-                                <div class="replaydiv text-center">
-                                    <span class="replaytext px-1">
-                                        Comment
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>`;
-                commentitem.append(responseItem);
-    })
+        $.each(value.response, function (index, responseitem) {
+            commentParts.push('<div class="ms-5">',
+                '<div class="card-body response-card px-3 py-1 mb-3 me-3">',
+                '<div class="comment-by-row">',
+                '<span class="cbytext">Responsed by </span>',
+                '<strong class="commentby">' + responseitem.response_username + '</strong>',
+                '</div>',
+                '<div class="comment-box pt-1 ps-3">',
+                '<p class="commenttext">' + responseitem.response_text + '</p>',
+                '</div>',
+                '<div class="row">',
+                '<div class="col-md-11">',
+                '<div class="textareabox d-none replaysection responsearea_' + responseitem.response_id + '">',
+                '<textarea class="textareainput w-100" style=""  id="textarea_' + responseitem.response_id + '"></textarea>',
+                '</div>',
+                '</div>',
+                '<div class="col-md-1 mt-auto">',
+                '<div class="replaydiv text-end replayactive">',
+                '<span class="replaytext px-1" id="replay_' + responseitem.response_id + '" onClick="ShowTextarea(' + `'${responseitem.response_id}'` + ')">',
+                '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+                'Replay',
+                '</span>',
+                '</div>',
+                '<div class="d-none replaysection responsearea_' + responseitem.response_id + '"">',
+                '<div class="replaydiv text-center mb-1"  onClick="HideTextarea(' + `'${responseitem.response_id}'` + ')"> ',
+                '<span class="replaytext px-1">',
+                'Cancel',
+                '</span>',
+                '</div>',
+                '<div class="replaydiv text-center">',
+                '<span class="replaytext px-1" onClick=SaveResponseToDb(' + `'${responseitem.response_id}'` + ',' + `'${value.id}'` + ')>',
+                'Comment',
+                '</span>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>'
+            );
+        });
 
-            commentContainer.append(commentitem);
-
-    })
+        const commentItem = commentParts.join('');
+        commentContainer.append(commentItem);
+    });
 }
+
+
+
+function ShowTextarea(id){
+    console.log(id,"Id")
+    $(`.replaysection`).addClass('d-none')
+    $(`.responsearea_${id}`).removeClass('d-none')
+    $(`#replay_${id}`).addClass('d-none')
+}
+
+function HideTextarea(id){
+    console.log(id,"HIde")
+    $(`.replaysection`).addClass('d-none')
+    $(`.responsearea_${id}`).addClass('d-none')
+    $(`#replay_${id}`).removeClass('d-none')
+}
+
 
 
 
@@ -424,3 +438,32 @@ function showtoastnotification(message,color){
 }
 
 
+
+function SaveResponseToDb(id,comment_id){
+    console.log(id,comment_id)
+    let response_save_url = `${current_domain}save_response`
+    let response_text = $(`#textarea_${id}`).val();
+    console.log(response_text);
+    let response_payload = {
+        "response_text":response_text,
+        "comment_id":comment_id
+    }
+
+    
+    post_api_call(response_save_url,response_payload)
+            .then(response => {
+                if(response.status == true){
+                    console.log("Saved SuccessFully")
+                    HideTextarea(id)
+                    GetUpdatedComments(selectedSessionId,selectedUserId)
+                    showtoastnotification("Response Saved Successfully","#49c282")
+                }   
+                else{
+                    console.log(response.message)
+                }    
+            })
+            .catch(error => {
+                // Handle any errors from the API call
+                console.error("API call error:", error);
+            });
+}
