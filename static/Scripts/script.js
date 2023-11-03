@@ -183,7 +183,15 @@ function toggleCard(cardId) {
 
 
 
-
+function ActivateCommentbtn () {
+    let content = $(this).val();
+    if(/^\s*$/.test(content)){
+        $("#comment-btn").prop("disabled", true);
+    }
+    else{
+        $("#comment-btn").prop("disabled", false);
+    }
+}
 
 
 // Method For Getting Chat Result with Session Id and UserId
@@ -288,47 +296,54 @@ function RenderCommentSession(data){
                         </div>
                     </div>
                     
-                    <div class="ms-5">
-                        <div class="card-body comment-card px-3 py-1 mb-3">
-                            <div id="comment-container"></div>
-                            <div class="comment-by-row">
-                                <span class="cbytext">Responsed by </span>
-                                <strong class="commentby">${value.user_name}</strong>
+
+            `;
+    $.each(data.response, function (index, responseitem) {
+        console.log("ResponseItem",data.response)
+        const responseItem = `<div class="ms-5">
+                    <div class="card-body comment-card px-3 py-1 mb-3">
+                        <div id="comment-container"></div>
+                        <div class="comment-by-row">
+                            <span class="cbytext">Responsed by </span>
+                            <strong class="commentby">${responseitem.response_username}</strong>
+                        </div>
+                        <div class="comment-box pt-1 ps-3">
+                                <p class="commenttext">${responseitem.response_text}</p>
+                        </div>
+                        <div class="row">
+                        <div class="col-md-11">
+                            <div class="textareabox d-none replaysection" id="textarea_${responseitem.response_id}">
+                                <textarea class="textareainput w-100" style=""></textarea>
                             </div>
-                            <div class="comment-box pt-1 ps-3">
-                                    <p class="commenttext">${value.comment}</p>
+                        </div>
+                        <div class="col-md-1 mt-auto">
+                            <div class="replaydiv text-end replayactive">
+                                <span class="replaytext px-1" id="replay_${responseitem.response_id}" onClick="ShowTextarea(${responseitem.response_id})">
+                                    <i class="fa-solid fa-reply pe-1 fa-sm"></i>
+                                    Replay
+                                </span>
                             </div>
-                            <div class="row">
-                            <div class="col-md-11">
-                                <div class="textareabox d-none replaysection">
-                                    <textarea class="textareainput w-100" style=""></textarea>
-                                </div>
-                            </div>
-                            <div class="col-md-1 mt-auto">
-                                <div class="replaydiv text-end replayactive">
+                            <div class="d-none replaysection">
+                                <div class="replaydiv text-center mb-1">
                                     <span class="replaytext px-1">
-                                        <i class="fa-solid fa-reply pe-1 fa-sm"></i>
-                                        Replay
+                                        Cancel
                                     </span>
                                 </div>
-                                <div class="d-none replaysection">
-                                    <div class="replaydiv text-center mb-1">
-                                        <span class="replaytext px-1">
-                                            Cancel
-                                        </span>
-                                    </div>
-                                    <div class="replaydiv text-center">
-                                        <span class="replaytext px-1">
-                                            Comment
-                                        </span>
-                                    </div>
+                                <div class="replaydiv text-center">
+                                    <span class="replaytext px-1">
+                                        Comment
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        </div>
                     </div>
-            `;
+                    </div>
+                </div>`;
+                commentitem.append(responseItem);
+    })
+
             commentContainer.append(commentitem);
+
     })
 }
 
