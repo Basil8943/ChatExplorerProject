@@ -164,7 +164,8 @@ body{
 }
 
 .mailtext{
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .logouttext{
@@ -172,7 +173,7 @@ body{
     font-weight: bold;
 }
 
-.replaytext{
+.replytext{
     font-size: 12px;
     color: #3498db;
     /* border: 1px solid #3498db; */

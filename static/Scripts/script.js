@@ -267,27 +267,31 @@ function RenderCommentSession(data) {
             '<p class="commenttext">' + value.comment + '</p>',
             '</div>',
             '<div class="row">',
-            '<div class="col-md-11">',
-            '<div class="textareabox d-none replaysection responsearea_' + value.id + '">',
+            '<div class="col-md-10">',
+            '<div class="textareabox d-none replysection responsearea_' + value.id + '">',
             '<textarea class="textareainput w-100" style=""  id="textarea_' + value.id + '"></textarea>',
             '</div>',
             '</div>',
-            '<div class="col-md-1 mt-auto">',
-            '<div class="replaydiv text-end replayactive">',
-            '<span class="replaytext px-1" id="replay_' + value.id  + '" onClick="ShowTextarea(' + `'${value.id }'` + ')">',
-            '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
-            'Replay',
-            '</span>',
+            '<div class="col-md-2 mt-auto">',
+            '<div class="replydiv text-end replyactive d-flex justify-content-end">',
+                '<span class="replytext px-1" id="reply_' + value.id  + '" onClick="ShowTextarea(' + `'${value.id }'` + ')">',
+                '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+                'Reply',
+                '</span>',
+                '<span class="replytext text-danger px-1" id="delete_' + value.id  + '" onClick="DeleteComment(' + `'${value.id }'` + ')">',
+                '<i class="fa-solid text-danger fa-trash pe-1 fa-sm"></i>',
+                'Delete',
+                '</span>',
             '</div>',
-            '<div class="d-none replaysection responsearea_' + value.id  + '"">',
-            '<div class="replaydiv text-center mb-1"   onClick="HideTextarea(' + `'${value.id }'` + ')"> ',
-            '<span class="replaytext px-1">',
-            'Cancel',
-            '</span>',
-            '</div>',
-            '<div class="replaydiv text-center">',
-            '<span class="replaytext px-1"  onClick=SaveResponseToDb(' + `'${value.id}'` + ',' + `'${value.id}'` + ')>',
+            '<div class="d-none replysection responsearea_' + value.id  + '"">',
+            '<div class="replydiv text-center mb-1"   onClick="HideTextarea(' + `'${value.id }'` + ')"> ',
+            '<span class="replytext px-1"  onClick=SaveResponseToDb(' + `'${value.id}'` + ',' + `'${value.id}'` + ')>',
+            '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
             'Comment',
+            '</span>',
+            '<span class="replytext px-1 text-danger">',
+            '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
+            'Cancel',
             '</span>',
             '</div>',
             '</div>',
@@ -309,26 +313,28 @@ function RenderCommentSession(data) {
                 '</div>',
                 '<div class="row">',
                 '<div class="col-md-11">',
-                '<div class="textareabox d-none replaysection responsearea_' + responseitem.response_id + '">',
-                '<textarea class="textareainput w-100" style=""  id="textarea_' + responseitem.response_id + '"></textarea>',
+                '<div class="textareabox d-none replysection responsearea_' + responseitem.response_id + '">',
+                '<textarea class="textareainput w-100 px-2" style=""  id="textarea_' + responseitem.response_id + '"></textarea>',
                 '</div>',
                 '</div>',
                 '<div class="col-md-1 mt-auto">',
-                '<div class="replaydiv text-end replayactive">',
-                '<span class="replaytext px-1" id="replay_' + responseitem.response_id + '" onClick="ShowTextarea(' + `'${responseitem.response_id}'` + ')">',
+                '<div class="replydiv text-end replyactive">',
+                '<span class="replytext px-1" id="reply_' + responseitem.response_id + '" onClick="ShowTextarea(' + `'${responseitem.response_id}'` + ')">',
                 '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
-                'Replay',
+                'Reply',
                 '</span>',
                 '</div>',
-                '<div class="d-none replaysection responsearea_' + responseitem.response_id + '"">',
-                '<div class="replaydiv text-center mb-1"  onClick="HideTextarea(' + `'${responseitem.response_id}'` + ')"> ',
-                '<span class="replaytext px-1">',
-                'Cancel',
-                '</span>',
-                '</div>',
-                '<div class="replaydiv text-center">',
-                '<span class="replaytext px-1" onClick=SaveResponseToDb(' + `'${responseitem.response_id}'` + ',' + `'${value.id}'` + ')>',
+                '<div class="d-none replysection responsearea_' + responseitem.response_id + '"">',
+                '<div class="replydiv text-center">',
+                '<span class="replytext px-1" onClick=SaveResponseToDb(' + `'${responseitem.response_id}'` + ',' + `'${value.id}'` + ')>',
+                '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
                 'Comment',
+                '</span>',
+                '</div>',
+                '<div class="replydiv text-center mb-1"  onClick="HideTextarea(' + `'${responseitem.response_id}'` + ')"> ',
+                '<span class="replytext px-1 text-danger">',
+                '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
+                'Cancel',
                 '</span>',
                 '</div>',
                 '</div>',
@@ -348,16 +354,19 @@ function RenderCommentSession(data) {
 
 function ShowTextarea(id){
     console.log(id,"Id")
-    $(`.replaysection`).addClass('d-none')
+    $(`.replysection`).addClass('d-none')
     $(`.responsearea_${id}`).removeClass('d-none')
-    $(`#replay_${id}`).addClass('d-none')
+    $(`#reply_${id}`).addClass('d-none')
+    $(`#delete_${id}`).addClass('d-none')
+
 }
 
 function HideTextarea(id){
     console.log(id,"HIde")
-    $(`.replaysection`).addClass('d-none')
+    $(`.replysection`).addClass('d-none')
     $(`.responsearea_${id}`).addClass('d-none')
-    $(`#replay_${id}`).removeClass('d-none')
+    $(`#reply_${id}`).removeClass('d-none')
+    $(`#delete_${id}`).removeClass('d-none')
 }
 
 
@@ -385,6 +394,7 @@ function SaveCommentToDB(){
                     showtoastnotification("Comment saved successfully.","#49c282")
                     $("#comment-area").val("");
                     $('.spinner-comment-btn').addClass('d-none');
+                    $(`#delete_${id}`).removeClass('d-none')
                     GetUpdatedComments(selectedSessionId,selectedUserId)
                     console.log("InnerResponce",response)
                 }       
@@ -441,29 +451,36 @@ function showtoastnotification(message,color){
 
 function SaveResponseToDb(id,comment_id){
     console.log(id,comment_id)
-    let response_save_url = `${current_domain}save_response`
+    let response_save_url = `${current_domain}save_response`;
     let response_text = $(`#textarea_${id}`).val();
-    console.log(response_text);
-    let response_payload = {
-        "response_text":response_text,
-        "comment_id":comment_id
+    if(/^\s*$/.test(response_text)){
+        $("#comment-btn").prop("disabled", true);
     }
-
+    else{
+        $("#comment-btn").prop("disabled", false);
     
-    post_api_call(response_save_url,response_payload)
-            .then(response => {
-                if(response.status == true){
-                    console.log("Saved SuccessFully")
-                    HideTextarea(id)
-                    GetUpdatedComments(selectedSessionId,selectedUserId)
-                    showtoastnotification("Response Saved Successfully","#49c282")
-                }   
-                else{
-                    console.log(response.message)
-                }    
-            })
-            .catch(error => {
-                // Handle any errors from the API call
-                console.error("API call error:", error);
-            });
+        console.log(response_text);
+        let response_payload = {
+            "response_text":response_text,
+            "comment_id":comment_id
+        }
+
+        
+        post_api_call(response_save_url,response_payload)
+                .then(response => {
+                    if(response.status == true){
+                        console.log("Saved SuccessFully")
+                        HideTextarea(id)
+                        GetUpdatedComments(selectedSessionId,selectedUserId)
+                        showtoastnotification("Response Saved Successfully","#49c282")
+                    }   
+                    else{
+                        console.log(response.message)
+                    }    
+                })
+                .catch(error => {
+                    // Handle any errors from the API call
+                    console.error("API call error:", error);
+                });
+        }
 }

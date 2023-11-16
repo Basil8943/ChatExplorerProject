@@ -28,9 +28,6 @@ class CommentModelSerializer(serializers.ModelSerializer):
         model = CommentModel
         fields = ['id','comment', 'session_id', 'user_id' ,'response']
 
-
-
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)  
         try:

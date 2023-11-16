@@ -9,7 +9,6 @@ class UserModel(models.Model):
     lastName = models.CharField(max_length=50)
     createdAt = models.DateTimeField()
     updatedAt = models.DateTimeField()
-    
     # Metadata as a JSON field
     metadata = models.JSONField()
 
@@ -18,4 +17,3 @@ class UserModel(models.Model):
 
     def __str__(self):
         return self.email  # Return the email as the model's string representation
-

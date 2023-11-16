@@ -31,7 +31,8 @@ DEBUG = True
 
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.2','192.168.1.25']
+
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.2','192.168.1.25']
 CORS_ALLOW_ALL_ORIGINS = True
 
 
@@ -49,6 +50,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders'
 ]
+
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -88,11 +93,12 @@ WSGI_APPLICATION = 'ChatExplorerProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
+        'ENFORCE_SCHEMA': True,
         'NAME': 'ChatExplorerDB',
         'CLIENT': {
             'host': 'mongodb+srv://cluster0.mrog66m.mongodb.net/ChatExplorerDB',
-            'username': 'basilsaju',
-            'password': 'Alponent@123',
+            'username': 'Robin',
+            'password': 'Robin@123',
        }
     }
 }

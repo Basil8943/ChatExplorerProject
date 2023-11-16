@@ -181,10 +181,9 @@
                             {% endif %}
                         </div>
                         <div class="text-center text-muted">
-                            {% if user_details.email %}
-                            <p class="my-0 mailtext">{{user_details.email}}</p>
+                            {% if user_details.user_role %}
+                            <p class="my-0 mailtext">{{user_details.user_role}}</p>
                             {% endif %}
-
                         </div>                        
                         <div class="icon-container text-center py-2">
                             <i class="fa-brands fa-facebook fa-lg px-1"></i>

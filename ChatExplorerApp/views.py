@@ -3,6 +3,7 @@ from django.shortcuts import redirect, render
 from ChatExplorerApp.Models.chatmodel import ChatModel
 import json
 from ChatExplorerApp.Models.commentmodel import CommentModel
+from ChatExplorerApp.Models.roles import RoleModel, UserRoleModel
 from ChatExplorerApp.Models.usermodel import UserModel
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
@@ -21,8 +22,13 @@ import uuid
 
 
 def index(request):
-    
-    return render(request,"index.html",{'show_login_card': True})
+    invalid_login = False
+    user_role=RoleModel.objects.all()
+    # RoleModel.objects.create(rollname="User")
+    # RoleModel.objects.create(rollname="Expert Coach")
+    request.session['user_roles'] = list(user_role.values())
+    return render(request, "index.html", {'show_login_card': True, 'invalid_login': invalid_login, 'user_roles': request.session['user_roles']})
+
 
 
 def save_to_db(request):
@@ -71,81 +77,143 @@ def save_to_db(request):
 
 # create new account
 def signup(request):
-    user_exist_check = False 
+    invalid_signup = False 
+    # Check if the request method is POST (form submission)
     if request.method == 'POST':
         firstname = request.POST['firstname']
         lastname = request.POST['lastname']
-        username = request.POST['username']
+        role = int(request.POST['role'])# get it as int
         email = request.POST['email']
         password = request.POST['password']
         cpassword = request.POST['cpassword']
-        print(username, email, password)
 
+        # Check if the passwords match
         if password != cpassword:
-            return render(request, "signup.html", {'error_message': 'Passwords do not match.', 'show_signup_card': True})
-        else:
+            message = "Passwords do not match. Please enter the same password"
+            print(message)
+            invalid_signup=True
+            return render(request, "index.html", {'invalid_signup': invalid_signup, 'message': message, 'show_signup_card': True})
+
+        # Check if the email already exists
+        try:
+            # Attempt to get a user by email
+            existing_user = User.objects.get(email=email)
+
+            # If a user with the provided email exists, handle it
+            if (existing_user):
+                print("aa")
+                message = "Email already exists"
+                print(message)
+                invalid_signup = True
+                return render(request, "index.html", {'invalid_signup': invalid_signup, 'message': message, 'show_signup_card': True})
+
+        except User.DoesNotExist:
             try:
-                # Check if the user already exists
-                print("A")
-                user = User.objects.get(username=username)
-                print("B")
+                # Combine first name and last name to create a new username
+                new_username = f"{firstname.lower()}{lastname.lower()}"
 
-                # User found, user already exists
-                print("User already exists.")
-                user_exist_check = True  # Set the flag to True
-                return render(request, "index.html", {'user_exist': user_exist_check, 'show_signup_card': True})
-            
-            except User.DoesNotExist:
-                # User does not exist, proceed to create a new user
-                try:
-                    # Create a new user
-                    user = User.objects.create_user(username=username, email=email, password=password, first_name=firstname, last_name=lastname)
-                    
-                    # Optionally, you can log in the user after signup
-                    user = authenticate(request, username=username, password=password)
-                    
-                    if user is not None:
-                        login(request, user)
-                        print("User created and logged in.")
+                # Check if the combined username already exists
+                user_count = User.objects.filter(username__startswith=new_username).count()
 
-                        first_name = request.user.first_name
-                        last_name = request.user.last_name
-                        full_name = f"{first_name} {last_name}"
-
-                        request.session['user_full_name'] = full_name
-                        request.session['user_email'] = email
-
-
-                        # Redirect to a chat page 
-                        return redirect('ChatExplorerApp:chat')
+                # If the combined username already exists, create a new unique username
+                if user_count > 0:
+                    new_username = f"{new_username}{user_count + 1}"
                 
-                except Exception as e:
-                    print(f"Database error: {e}")
-                    # Handle the error, e.g., display an error message to the user
-                    return render(request, "index.html", {'error_message': 'An error occurred during signup.', 'show_signup_card': True})
+                # Get the selected role based on the provided role ID
+                selected_role = RoleModel.objects.get(pk=role)
 
-    return render(request, "signup.html", {'show_signup_card': True})
+                print(selected_role, "Selected Role")
+
+                # Create a new user
+                user = User.objects.create_user(username=new_username, email=email, password=password, first_name=firstname, last_name=lastname)
+                print(user.username, "User Created")
+
+                # Create a new UserRoleModel entry for the user and assigned role
+                UserRoleModel.objects.create(user_id=user.id, rolltype_id=role)
+
+                # Get the role name for the user
+                user_role = RoleModel.objects.get(id=role)
+
+                # Optionally, you can log in the user after signup
+                user = authenticate(request, username=new_username, password=password)
+                print("User Authenticated:", user)
+
+                if user is not None:
+                    login(request, user)
+                    print("User created and logged in.")
+
+                    # Get user details for session data
+                    first_name = request.user.first_name
+                    last_name = request.user.last_name
+                    full_name = f"{first_name} {last_name}"
+
+                    # Set session data for the user
+                    request.session['user_full_name'] = full_name
+                    request.session['user_email'] = email
+                    request.session['user_role'] = user_role.rollname
+
+                    print("Logged in")
+
+                    # Redirect to a chat page 
+                    return redirect('ChatExplorerApp:chat')
+
+            except Exception as e:
+                print(f"Database error: {e}")
+                # Handle the error, e.g., display an error message to the user
+                return render(request, "index.html", {'error_message': 'An error occurred during signup.', 'show_signup_card': True})
+
+    # If the request method is not POST, render the signup.html template
+    return render(request, "index.html", {'show_signup_card': True})
 
 # login
 # Api Method for Getting All Session Data
 def Userlogin(request):
-    invalid_login = False
-    loadercheck=True 
+    invalid_login = False 
+    # Check if the request method is POST (form submission)
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
-        print(email,password)
-        # Authenticate the user
-        userObj = User.objects.get(email=email)
-        user = authenticate(request, username=userObj.username, password=password)
-        
+
+        # Try to get the user object based on the provided email
+        try:
+            userObj = User.objects.get(email=email) #get email from UserModel
+        except:
+            invalid_login = True
+            message = "Invalid email"
+            return render(request, "index.html", {'invalid_login': invalid_login, 'message': message, 'show_login_card': True})
+
+        # Try to authenticate the user
+        try:
+            # Handle authentication success
+            user = authenticate(request, username=userObj.username, password=password)
+
+            # get userroletype_id from UserRoleModel
+            user_type = UserRoleModel.objects.get(user_id=user.id) 
+
+            # get Rollname from RoleModel as Object
+            user_roleObj = RoleModel.objects.get(id=user_type.rolltype_id)
+            user_role = user_roleObj.rollname
+            #save userrole to session
+            request.session['user_role'] = user_role
+
+        except:
+            # Handle authentication failure
+            invalid_login = True
+            message = "User not found"
+            return render(request, "index.html", {'invalid_login': invalid_login, 'message': message, 'show_login_card': True})
+
+        # Check if authentication was successful
         if user is not None:
             # Login the user
             login(request, user)
             print("User logged in.")
+            # get firstname and lastname from user
             first_name = request.user.first_name
             last_name = request.user.last_name
+
+            # merging firstname and lastname as fullname
             full_name = f"{first_name} {last_name}"
+            # save fullname and email to session
             request.session['user_full_name'] = full_name
             request.session['user_email'] = email
 
@@ -154,11 +222,12 @@ def Userlogin(request):
         else:
             # Handle invalid login credentials
             print("Invalid login credentials.")
-            invalid_login = True  # Set the flag to True
-            return render(request,"index.html",{'invalid_login': invalid_login,'loadercheck': loadercheck,'show_login_card': True})
+            invalid_login = True
+            message = "User not found"
+            return render(request, "index.html", {'invalid_login': invalid_login, 'message': message, 'show_login_card': True})
 
-    return render(request,"signup.html")
-
+    # If the request method is not POST, render the signup.html template
+    return render(request, "signup.html")
 
 # Api Method for Getting All Session Data
 @api_view(['GET'])
@@ -168,24 +237,35 @@ def getsessions(request,user_id):
     return JsonResponse(sessions_data, safe=False)
 
 
-# Method for render index view only if logged in
-@login_required(login_url='/')
+# Method for rendering the index view only if the user is logged in
+@login_required(login_url='/')  # Redirect to '/' if the user is not logged in
 def chat(request):
+    # Retrieve all user objects from the UserModel
     user_list = UserModel.objects.all()
+
     # Retrieve user details from the session
     user_full_name = request.session.get('user_full_name', '')
     user_email = request.session.get('user_email', '')
+    user_role = request.session.get('user_role', '')
+    
+    # Create a dictionary with user details
     user_details = {
-            'full_name': user_full_name,
-            'email': user_email,
-        }
+        'full_name': user_full_name,
+        'email': user_email,
+        'user_role': user_role
+    }
 
+    # Render the 'chat.html' template with user_list and user_details as context
     return render(request, 'chat.html', {'user_list': user_list, 'user_details': user_details})
+
+
+
 
 # Api Method for getting chat results with session_id and user_id
 @api_view(['GET'])
 def getchatresults(request,user_id,session_id):
     chat_result = ChatModel.objects.filter(Q(userId=user_id) | Q(userId="taiwa-bot"), sessionId=session_id)
+    print(chat_result)
     chat_serializer = ChatModelSerializer(chat_result,many=True)
     comment_result = CommentModel.objects.filter(Q(user_id=user_id) | Q(user_id="taiwa-bot"), session_id=session_id)
     comment_serializer = CommentModelSerializer(comment_result,many=True)
@@ -277,7 +357,10 @@ def save_response(request):
         })
 
 def userlogout(request):
+    # Clear session data
+    request.session.flush()
+    # Logout the user
     logout(request)
+    # Redirect to the desired URL
     return redirect("/")
-
 

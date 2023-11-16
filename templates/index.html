@@ -41,7 +41,7 @@
                                     <a class="newlink pl-2"  onclick="toggleCard('signupcard')">SignUp</a>
                                 </div>
                                 {% if invalid_login %}
-                                    <div class="text-danger invalidtext">Invalid Login</div>
+                                    <div class="text-danger invalidtext">{{message}}</div>
                                 {% endif %}
                             </form>
                         </div>
@@ -70,16 +70,22 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group text-start mb-3">
-                                            <label for="exampleFormControlInput1">Enter Username:</label>
-                                            <input type="text" class="inputlabel px-2 w-100" name="username"  id="username" placeholder="Enter username">
-                                          </div>
+                                            <label for="exampleFormControlInput1">Enter Email ID</label>
+                                            <input type="email" class="inputlabel px-2 w-100" name="email" id="email" placeholder="Enter Email Address">
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group text-start mb-3">
-                                            <label for="exampleFormControlInput1">Enter Email ID</label>
-                                            <input type="email" class="inputlabel px-2 w-100" name="email" id="email" placeholder="Enter Email Address">
-                                          </div>
-                                    </div>
+                                            <label for="exampleFormControlInput1">Select Role:</label>
+                                            <select class="form-select selectinput px-2 w-100" name="role" id="role">
+                                                {% for role in request.session.user_roles %}
+                                                    <option value="{{ role.id }}" id="option_{{ role.rollname }}" name="{{ role.id }}">
+                                                        {{ role.rollname }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>           
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
@@ -101,9 +107,9 @@
                                   <div class="d-flex justify-content-center pt-3">
                                     <p class="donttext px-2">Already have an account</p><a class="newlink pl-2" onclick="toggleCard('logincard')">Login</a>
                                 </div>
-                                {% if user_exist %}
-                                <div class="text-danger invalidtext">User already exist</div>
-                                {% endif %}                            
+                                {% if invalid_signup %}
+                                    <div class="text-danger invalidtext">{{message}}</div>
+                                {% endif %}
                             </form>
                         </div>
                     </div>
