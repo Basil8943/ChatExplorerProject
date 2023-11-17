@@ -4,6 +4,7 @@ let selectedUserId = "";
 let selectedSessionId = "";
 let current_domain = "http://127.0.0.1:8000/"
 let session_list = []
+let userroletype = 0;
 // Api call Method
 
 function get_api_call(url){
@@ -58,6 +59,10 @@ window.onload = function () {
 var initialTop = 83; // Initial top position
 var scrollThreshold = 50; // Scroll threshold to trigger the change
 var animationDuration = 100; // Animation duration in milliseconds
+userRoletype = document.getElementById('userId').dataset.userRole;
+
+console.log(userRoletype,"userroletype");
+
 
 $(window).scroll(function() {
     var scrollTop = $(window).scrollTop();
@@ -94,6 +99,7 @@ $(window).scroll(function() {
 
     
     var selectedValue = $('#userSelect').val();
+
 
     GetSessionList();
 
@@ -221,8 +227,6 @@ function GetChatResults(session_id){
                 if(response.comment_data.length > 0){
                     RenderCommentSession(response.comment_data);
                 }
-               
-              
                 
             })
             .catch(error => {
@@ -254,96 +258,184 @@ function RenderChatSession(data){
 function RenderCommentSession(data) {
     const commentContainer = $('#comment-container');
     commentContainer.empty();
-
     $.each(data, function (key, value) {
-        const commentParts = [
-            '<div class="card-body chat-card mt-3">',
-            '<div class="card-body comment-card py-1">',
-            '<div class="comment-by-row">',
-            '<span class="cbytext">Commented by </span>',
-            '<strong class="commentby">' + value.user_name + '</strong>',
-            '</div>',
-            '<div class="comment-box pt-1 ps-3">',
-            '<p class="commenttext">' + value.comment + '</p>',
-            '</div>',
-            '<div class="row">',
-            '<div class="col-md-10">',
-            '<div class="textareabox d-none replysection responsearea_' + value.id + '">',
-            '<textarea class="textareainput w-100" style=""  id="textarea_' + value.id + '"></textarea>',
-            '</div>',
-            '</div>',
-            '<div class="col-md-2 mt-auto">',
-            '<div class="replydiv text-end replyactive d-flex justify-content-end">',
-                '<span class="replytext px-1" id="reply_' + value.id  + '" onClick="ShowTextarea(' + `'${value.id }'` + ')">',
-                '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
-                'Reply',
-                '</span>',
-                '<span class="replytext text-danger px-1" id="delete_' + value.id  + '" onClick="DeleteComment(' + `'${value.id }'` + ')">',
-                '<i class="fa-solid text-danger fa-trash pe-1 fa-sm"></i>',
-                'Delete',
-                '</span>',
-            '</div>',
-            '<div class="d-none replysection responsearea_' + value.id  + '"">',
-            '<div class="replydiv text-center mb-1"   onClick="HideTextarea(' + `'${value.id }'` + ')"> ',
-            '<span class="replytext px-1"  onClick=SaveResponseToDb(' + `'${value.id}'` + ',' + `'${value.id}'` + ')>',
-            '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
-            'Comment',
-            '</span>',
-            '<span class="replytext px-1 text-danger">',
-            '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
-            'Cancel',
-            '</span>',
-            '</div>',
-            '</div>',
-            '</div>',
-            '</div>',
-            '</div>',
-            '</div>'
-        ];
-
-        $.each(value.response, function (index, responseitem) {
-            commentParts.push('<div class="ms-5">',
-                '<div class="card-body response-card px-3 py-1 mb-3 me-3">',
+        let commentParts = []
+        if(userRoletype == 2){
+            commentParts = [
+                '<div class="card-body chat-card mt-3">',
+                '<div class="card-body comment-card py-1">',
                 '<div class="comment-by-row">',
-                '<span class="cbytext">Responsed by </span>',
-                '<strong class="commentby">' + responseitem.response_username + '</strong>',
+                '<span class="cbytext">Commented by </span>',
+                '<strong class="commentby">' + value.user_name + '</strong>',
                 '</div>',
                 '<div class="comment-box pt-1 ps-3">',
-                '<p class="commenttext">' + responseitem.response_text + '</p>',
+                '<p class="commenttext">' + value.comment + '</p>',
                 '</div>',
                 '<div class="row">',
-                '<div class="col-md-11">',
-                '<div class="textareabox d-none replysection responsearea_' + responseitem.response_id + '">',
-                '<textarea class="textareainput w-100 px-2" style=""  id="textarea_' + responseitem.response_id + '"></textarea>',
+                '<div class="col-md-10">',
+                '<div class="textareabox d-none replysection responsearea_' + value.id + '">',
+                '<textarea class="textareainput w-100" style=""  id="textarea_' + value.id + '"></textarea>',
                 '</div>',
                 '</div>',
-                '<div class="col-md-1 mt-auto">',
-                '<div class="replydiv text-end replyactive">',
-                '<span class="replytext px-1" id="reply_' + responseitem.response_id + '" onClick="ShowTextarea(' + `'${responseitem.response_id}'` + ')">',
-                '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
-                'Reply',
-                '</span>',
+                '<div class="col-md-2 mt-auto replybuttonsection">',
+                '<div class="replydiv text-end replyactive d-flex justify-content-end">',
+                    '<button class="replytext px-2 btn btn-primary border-0" id="reply_' + value.id  + '" onClick="ShowTextarea(' + `'${value.id }'` + ')">',
+                    '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+                    'Reply',
+                    '</button>',
+                    '<button class="replytext px-2 btn btn-danger border-0" id="delete_' + value.id  + '" onClick="DeleteComment(' + `'${value.id }'`+ ',' + `'0'`+')">',
+                    '<i class="fa-solid fa-trash pe-1 fa-sm"></i>',
+                    'Delete',
+                    '</button>',
                 '</div>',
-                '<div class="d-none replysection responsearea_' + responseitem.response_id + '"">',
-                '<div class="replydiv text-center">',
-                '<span class="replytext px-1" onClick=SaveResponseToDb(' + `'${responseitem.response_id}'` + ',' + `'${value.id}'` + ')>',
-                '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
+                '<div class="d-none replysection responsearea_' + value.id  + '"">',
+                '<div class="replydiv text-center mb-1 d-flex jusify-content-space-between"> ',
+                '<button class="replytext px-2 btn btn-primary border-0"  onClick=SaveResponseToDb(' + `'${value.id}'` + ',' + `'${value.id}'` + ')>',
                 'Comment',
-                '</span>',
-                '</div>',
-                '<div class="replydiv text-center mb-1"  onClick="HideTextarea(' + `'${responseitem.response_id}'` + ')"> ',
-                '<span class="replytext px-1 text-danger">',
+                '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
+                '</button>',
+                '<button class="replytext px-2 btn btn-danger border-0" onClick="HideTextarea(' + `'${value.id }'` + ')">',
                 '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
                 'Cancel',
-                '</span>',
+                '</button>',
                 '</div>',
                 '</div>',
                 '</div>',
                 '</div>',
                 '</div>',
                 '</div>'
-            );
+            ];
+        }
+        else{
+
+            commentParts = [
+                '<div class="card-body chat-card mt-3">',
+                '<div class="card-body comment-card py-1">',
+                '<div class="comment-by-row">',
+                '<span class="cbytext">Commented by </span>',
+                '<strong class="commentby">' + value.user_name + '</strong>',
+                '</div>',
+                '<div class="comment-box pt-1 ps-3">',
+                '<p class="commenttext">' + value.comment + '</p>',
+                '</div>',
+                '<div class="row">',
+                '<div class="col-md-10">',
+                '<div class="textareabox d-none replysection responsearea_' + value.id + '">',
+                '<textarea class="textareainput w-100" style=""  id="textarea_' + value.id + '"></textarea>',
+                '</div>',
+                '</div>',
+                '<div class="col-md-2 mt-auto replybuttonsection">',
+                '<div class="replydiv text-end replyactive d-flex justify-content-end">',
+                    '<button class="replytext px-2 btn btn-primary border-0" id="reply_' + value.id  + '" onClick="ShowTextarea(' + `'${value.id }'` + ')">',
+                    '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+                    'Reply',
+                    '</button>',
+                '</div>',
+                '<div class="d-none replysection responsearea_' + value.id  + '"">',
+                '<div class="replydiv text-center mb-1 d-flex jusify-content-space-between"> ',
+                '<button class="replytext px-2 btn btn-primary border-0"  onClick=SaveResponseToDb(' + `'${value.id}'` + ',' + `'${value.id}'` + ')>',
+                'Comment',
+                '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
+                '</button>',
+                '<button class="replytext px-2 btn btn-danger border-0" onClick="HideTextarea(' + `'${value.id }'` + ')">',
+                '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
+                'Cancel',
+                '</button>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>'
+            ];
+
+        }
+        
+         
+
+        $.each(value.response, function (index, responseitem) {
+            if(userRoletype == 2){
+                commentParts.push('<div class="ms-5">',
+                '<div class="card-body response-card px-3 py-1 mb-3 me-3">',
+                '<div class="comment-by-row">',
+                '<span class="cbytext">Responsed by </span>',
+                '<strong class="commentby">' + responseitem.response_username + '</strong>',
+                '</div>',
+                '<div class="comment-box pt-1 ps-3">',
+                '<p class="commenttext m-0">' + responseitem.response_text + '</p>',
+                '</div>',
+                '<div class="row">',
+                '<div class="col-md-10">',
+                '<div class="textareabox d-none replysection responsearea_' + responseitem.response_id + '">',
+                '<textarea class="textareainput w-100 px-2" style=""  id="textarea_' + responseitem.response_id + '"></textarea>',
+                '</div>',
+                '</div>',
+                '<div class="col-md-2 mt-auto">',
+                '<div class="replydiv text-end replyactive d-flex justify-content-end">',
+                '<button class="replytext px-2 btn btn-primary border-0" id="reply_' + responseitem.response_id + '" onClick="ShowTextarea(' + `'${responseitem.response_id}'` + ')">',
+                '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+                'Reply',
+                '</button>',
+                '<button class="replytext px-2 btn btn-danger border-0" id="delete_' + responseitem.response_id  + '" onClick="DeleteComment(' + `'${value.id }'`+',' + `'${responseitem.response_id }'`+ ')">',
+                '<i class="fa-solid fa-trash pe-1 fa-sm"></i>',
+                'Delete',
+                '</button>',
+                '</div>',
+                '<div class=" replydiv d-none replysection text-end replyactive d-flex justify-content-end responsearea_' + responseitem.response_id + '"">',
+                    '<button class="replytext px-1 btn btn-primary border-0" onClick=SaveResponseToDb(' + `'${responseitem.response_id}'` + ',' + `'${value.id}'` + ')>',
+                    '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
+                    'Comment',
+                    '</button>',
+                    '<button class="replytext px-1 btn btn-danger border-0" onClick="HideTextarea(' + `'${responseitem.response_id}'` + ')">',
+                    '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
+                    'Cancel',
+                    '</button>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>')
+            }
+            else{
+                commentParts.push('<div class="ms-5">',
+                '<div class="card-body response-card px-3 py-1 mb-3 me-3">',
+                '<div class="comment-by-row">',
+                '<span class="cbytext">Responsed by </span>',
+                '<strong class="commentby">' + responseitem.response_username + '</strong>',
+                '</div>',
+                '<div class="comment-box pt-1 ps-3">',
+                '<p class="commenttext m-0">' + responseitem.response_text + '</p>',
+                '</div>',
+                '<div class="row">',
+                '<div class="col-md-10">',
+                '<div class="textareabox d-none replysection responsearea_' + responseitem.response_id + '">',
+                '<textarea class="textareainput w-100 px-2" style=""  id="textarea_' + responseitem.response_id + '"></textarea>',
+                '</div>',
+                '</div>',
+                '<div class="col-md-2 mt-auto">',
+                '<div class="replydiv text-end replyactive d-flex justify-content-end">',
+                '<button class="replytext px-2 btn btn-primary border-0" id="reply_' + responseitem.response_id + '" onClick="ShowTextarea(' + `'${responseitem.response_id}'` + ')">',
+                '<i class="fa-solid fa-reply pe-1 fa-sm"></i>',
+                'Reply',
+                '</button>',
+                '</div>',
+                '<div class=" replydiv d-none replysection text-end replyactive d-flex justify-content-end responsearea_' + responseitem.response_id + '"">',
+                    '<button class="replytext px-1 btn btn-primary border-0" onClick=SaveResponseToDb(' + `'${responseitem.response_id}'` + ',' + `'${value.id}'` + ')>',
+                    '<i class="fa-solid fa-paper-plane pe-1 fa-sm"></i>',
+                    'Comment',
+                    '</button>',
+                    '<button class="replytext px-1 btn btn-danger border-0" onClick="HideTextarea(' + `'${responseitem.response_id}'` + ')">',
+                    '<i class="fa-solid fa-times pe-1 fa-sm"></i>',
+                    'Cancel',
+                    '</button>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>',
+                '</div>')
+            }
         });
+
 
         const commentItem = commentParts.join('');
         commentContainer.append(commentItem);
@@ -354,10 +446,12 @@ function RenderCommentSession(data) {
 
 function ShowTextarea(id){
     console.log(id,"Id")
+    $(`.replytext`).removeClass('d-none')
     $(`.replysection`).addClass('d-none')
     $(`.responsearea_${id}`).removeClass('d-none')
     $(`#reply_${id}`).addClass('d-none')
     $(`#delete_${id}`).addClass('d-none')
+
 
 }
 
@@ -394,7 +488,6 @@ function SaveCommentToDB(){
                     showtoastnotification("Comment saved successfully.","#49c282")
                     $("#comment-area").val("");
                     $('.spinner-comment-btn').addClass('d-none');
-                    $(`#delete_${id}`).removeClass('d-none')
                     GetUpdatedComments(selectedSessionId,selectedUserId)
                     console.log("InnerResponce",response)
                 }       
@@ -420,6 +513,45 @@ function getCSRFToken() {
     return "";
   }
 
+
+function DeleteComment(parrent_commentId,child_commentId){
+
+    const delete_comment_url = `${current_domain}/delete_comment`
+
+    let data = {
+        "parrent_comment_id":parrent_commentId,
+        "child_comment_id":child_commentId
+    }
+
+    console.log(data,"aaaaaaaaaaaaa")
+
+    post_api_call(delete_comment_url,data)
+            .then(response => {
+                console.log("OuterResponce",response)
+                if(response.message == "success"){
+                    showtoastnotification("Comment Deleted successfully.","#49c282")
+                    $("#comment-area").val("");
+                    $('.spinner-comment-btn').addClass('d-none');
+                    GetUpdatedComments(selectedSessionId,selectedUserId)
+                    console.log("InnerResponce",response)
+                }       
+            })
+            .catch(error => {
+                // Handle any errors from the API call
+                console.error("API call error:", error);
+            });
+
+
+
+
+
+
+
+}
+
+
+
+
 function GetUpdatedComments(selectedSessionId,selectedUserId){
     let url = `${current_domain}/getcomments/${selectedUserId}/${selectedSessionId}`;
     get_api_call(url)
@@ -427,7 +559,11 @@ function GetUpdatedComments(selectedSessionId,selectedUserId){
             // The first function has completed, and you have the session_list
             console.log("Response",response);                
             if(response.comment_data.length > 0){
+                $(`.response-card`).removeClass('d-none')
                 RenderCommentSession(response.comment_data);
+            }
+            else{
+                $(`.response-card`).addClass('d-none')
             }               
         })
         .catch(error => {

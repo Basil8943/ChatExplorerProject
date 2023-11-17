@@ -174,14 +174,24 @@ body{
 }
 
 .replytext{
-    font-size: 12px;
+    font-size: 12px !important;
     color: #3498db;
     /* border: 1px solid #3498db; */
     border-radius: 4px;
     cursor: pointer;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
 }
-.textareabox{
-    
+.replydiv{
+    gap:5px;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+
+.replysection{
+    gap:5px;
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
 }
 
 .textareainput{

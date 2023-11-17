@@ -20,5 +20,6 @@ urlpatterns=[
     path('save_comment', views.save_comment, name="save_comment"),
     path('getcomments/<str:user_id>/<str:session_id>', views.getcomments, name="getcomments"),
     path('save_response', views.save_response, name="save_response"),
+    path('delete_comment', views.delete_comment, name="delete_comment"),
 
     ]

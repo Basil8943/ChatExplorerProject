@@ -16,6 +16,7 @@ from django.db.models import Q
 from ChatExplorerApp.serializers import ChatModelSerializer, CommentModelSerializer
 from django.contrib.auth import logout
 import uuid
+from rest_framework import status
 
 
 # Create your views here.
@@ -124,6 +125,7 @@ def signup(request):
 
                 print(selected_role, "Selected Role")
 
+
                 # Create a new user
                 user = User.objects.create_user(username=new_username, email=email, password=password, first_name=firstname, last_name=lastname)
                 print(user.username, "User Created")
@@ -133,6 +135,7 @@ def signup(request):
 
                 # Get the role name for the user
                 user_role = RoleModel.objects.get(id=role)
+                request.session['rolltype_id'] = role
 
                 # Optionally, you can log in the user after signup
                 user = authenticate(request, username=new_username, password=password)
@@ -195,6 +198,8 @@ def Userlogin(request):
             user_role = user_roleObj.rollname
             #save userrole to session
             request.session['user_role'] = user_role
+            request.session['rolltype_id'] = user_type.rolltype_id
+
 
         except:
             # Handle authentication failure
@@ -243,16 +248,20 @@ def chat(request):
     # Retrieve all user objects from the UserModel
     user_list = UserModel.objects.all()
 
+    print(user_list,"zzzzzzzzzzz")
     # Retrieve user details from the session
     user_full_name = request.session.get('user_full_name', '')
     user_email = request.session.get('user_email', '')
     user_role = request.session.get('user_role', '')
+    user_roletype_id = request.session.get('rolltype_id', '')
+
     
     # Create a dictionary with user details
     user_details = {
         'full_name': user_full_name,
         'email': user_email,
-        'user_role': user_role
+        'user_role': user_role,
+        'roletype_id':user_roletype_id
     }
 
     # Render the 'chat.html' template with user_list and user_details as context
@@ -364,3 +373,38 @@ def userlogout(request):
     # Redirect to the desired URL
     return redirect("/")
 
+## Delete Comment by passing CommentId and CommentParentID
+@api_view(['POST'])
+def delete_comment(request):
+    try:
+        parrent_comment_id = request.data["parrent_comment_id"]
+        comment_id = request.data["child_comment_id"]
+        if comment_id != '0':
+            existed_comment = CommentModel.objects.get(id = parrent_comment_id)
+            if existed_comment is not None:
+                updated_response = [item for item in existed_comment.response if item.get("response_id") != comment_id]
+                if len(existed_comment.response) != len(updated_response):
+                    existed_comment.response = updated_response
+                    existed_comment.save()
+                    return Response({
+                        "detail":"comment deleted successfully",
+                        "status":True
+                    })
+                else:
+                    return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            print(f"Parent{parrent_comment_id}")
+            existed_comment = CommentModel.objects.get(id = parrent_comment_id)
+            if existed_comment is not None:
+                 existed_comment.delete()
+                 return Response({
+                        "detail":"comment deleted successfully",
+                        "status":True,
+                        "message":"success"
+                    })
+            else:
+                 return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'detail': f'Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

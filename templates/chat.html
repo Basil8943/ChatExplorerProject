@@ -180,7 +180,7 @@
                                 <span class="welcometext text-muted">Welcome, </span><strong>{{ user_details.full_name }}</strong>
                             {% endif %}
                         </div>
-                        <div class="text-center text-muted">
+                        <div class="text-center text-muted" id="userId" data-user-role="{% if user_details.roletype_id %}{{ user_details.roletype_id }}{% endif %}">
                             {% if user_details.user_role %}
                             <p class="my-0 mailtext">{{user_details.user_role}}</p>
                             {% endif %}
