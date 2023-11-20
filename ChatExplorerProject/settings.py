@@ -86,6 +86,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ChatExplorerProject.wsgi.application'
 
+CONNECTION_STRING = "mongodb+srv://Robin:Robin%40123@cluster0.mrog66m.mongodb.net"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

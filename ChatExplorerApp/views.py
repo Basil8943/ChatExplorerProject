@@ -17,6 +17,13 @@ from ChatExplorerApp.serializers import ChatModelSerializer, CommentModelSeriali
 from django.contrib.auth import logout
 import uuid
 from rest_framework import status
+from pymongo import MongoClient
+from pymongo.encryption_options import AutoEncryptionOpts
+from pymongo.errors import EncryptionError
+from bson import json_util
+from pathlib import Path
+from django.conf import settings
+from .create_key import create_key
 
 
 # Create your views here.
@@ -34,40 +41,66 @@ def index(request):
 
 def save_to_db(request):
     #actual path of your CSV file
+    create_key()
     file_path = './Files/ChatExport.json'
     try:
+
+        secret_file = './Files/secret_key.txt'
+        with open(secret_file, 'r') as file:
+            key_hex = file.read()
+
+        local_master_key = bytes.fromhex(key_hex)
+        collection_schema = json_util.loads(Path("json_schema.json").read_text())
+
+
+        kms_providers = {"local": {"key": local_master_key}}
+
+        csfle_opts = AutoEncryptionOpts(
+        kms_providers,
+        "SecretkeyDb.__keystore",
+        schema_map={"ChatExplorerDB.UserModel": collection_schema},
+        )
+
+
         with open(file_path, 'r') as file:
             json_data = json.load(file)
 
-        # Loop through JSON data and save to the database
-        for item in json_data:
-            chat_instance = ChatModel(
-                sessionId=item['sessionId'],
-                userId=item['userId'],
-                messageId=item['messageId'],
-                message=item['message'],
-                createdAt=item['createdAt'],
-                updatedAt=item['updatedAt'],
-            )
-            chat_instance.save()
+        # # Loop through JSON data and save to the database
+        # for item in json_data:
+        #     chat_instance = ChatModel(
+        #         sessionId=item['sessionId'],
+        #         userId=item['userId'],
+        #         messageId=item['messageId'],
+        #         message=item['message'],
+        #         createdAt=item['createdAt'],
+        #         updatedAt=item['updatedAt'],
+        #     )
+        #     chat_instance.save()
+
+
+        
 
 
         user_json_file = './Files/Users.json'
         with open(user_json_file, 'r') as file:
             data = json.load(file)  # Use json.load to load the JSON data
 
-            for item in data:
-                user = UserModel(
-                    userId=item['userId'],
-                    orgId=item['orgId'],
-                    email=item['email'],
-                    firstName=item['firstName'],
-                    lastName=item['lastName'],
-                    createdAt=item['createdAt'],
-                    updatedAt=item['updatedAt'],
-                    metadata=item['metadata']
-                )
-                user.save()
+
+            with MongoClient(settings.CONNECTION_STRING, auto_encryption_opts=csfle_opts) as client:
+                client.ChatExplorerDB.UserModel.delete_many({})
+                
+
+                for item in data:
+                    client.ChatExplorerDB.UserModel.insert_one({
+                        "userId": item["userId"],
+                        "orgId": item["orgId"],
+                        "email": item["email"],
+                        "firstName": item["firstName"],
+                        "lastName": item["lastName"],
+                        "createdAt": item["createdAt"],
+                        "updatedAt": item["updatedAt"],
+                        "metadata": item["metadata"],
+                    })
     except FileNotFoundError:
         print(f'File not found')
     except json.JSONDecodeError:
@@ -154,6 +187,8 @@ def signup(request):
                     request.session['user_full_name'] = full_name
                     request.session['user_email'] = email
                     request.session['user_role'] = user_role.rollname
+                    request.session['user_role_id'] = user_role.id
+
 
                     print("Logged in")
 
@@ -246,15 +281,12 @@ def getsessions(request,user_id):
 @login_required(login_url='/')  # Redirect to '/' if the user is not logged in
 def chat(request):
     # Retrieve all user objects from the UserModel
-    user_list = UserModel.objects.all()
-
-    print(user_list,"zzzzzzzzzzz")
     # Retrieve user details from the session
     user_full_name = request.session.get('user_full_name', '')
     user_email = request.session.get('user_email', '')
     user_role = request.session.get('user_role', '')
     user_roletype_id = request.session.get('rolltype_id', '')
-
+    user_list = fetch_data_from_db(user_roletype_id)
     
     # Create a dictionary with user details
     user_details = {
@@ -408,3 +440,28 @@ def delete_comment(request):
                  return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'detail': f'Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def fetch_data_from_db(role_id):
+        if(role_id == 2):
+            secret_file = './Files/secret_key.txt'
+            with open(secret_file, 'r') as file:
+                key_hex = file.read()
+
+            local_master_key = bytes.fromhex(key_hex)
+            collection_schema = json_util.loads(Path("json_schema.json").read_text())
+
+
+            kms_providers = {"local": {"key": local_master_key}}
+
+            csfle_opts = AutoEncryptionOpts(
+            kms_providers,
+            "SecretkeyDb.__keystore",
+            schema_map={"ChatExplorerDB.UserModel": collection_schema},
+            )
+
+            with MongoClient(settings.CONNECTION_STRING, auto_encryption_opts=csfle_opts) as client:
+                return list(client.ChatExplorerDB.UserModel.find())
+        else:
+            with MongoClient(settings.CONNECTION_STRING) as client:
+                return list(client.ChatExplorerDB.UserModel.find())

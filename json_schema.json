@@ -1,0 +1,33 @@
+{
+  "bsonType": "object",
+  "properties": {
+    "firstName": {
+      "encrypt": {
+        "bsonType": "string",
+        "algorithm": "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic",
+        "keyId": [
+          {
+            "$binary": {
+              "base64": "N+lZREHHSWWa03boaGPMIA==",
+              "subType": "04"
+            }
+          }
+        ]
+      }
+    },
+    "lastName": {
+      "encrypt": {
+        "bsonType": "string",
+        "algorithm": "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic",
+        "keyId": [
+          {
+            "$binary": {
+              "base64": "N+lZREHHSWWa03boaGPMIA==",
+              "subType": "04"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
